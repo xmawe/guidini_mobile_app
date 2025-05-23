@@ -63,7 +63,12 @@ class ChatInput extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(5),
-                onTap: onSend,
+                onTap: () {
+                  if (controller?.text.trim().isNotEmpty ?? false) {
+                    onSend?.call();
+                    controller?.clear();
+                  }
+                },
                 child: const Center(
                   child: Icon(
                     Icons.send,

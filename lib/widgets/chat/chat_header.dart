@@ -32,13 +32,35 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
           CircleAvatar(
             radius: 20,
             backgroundColor: AppColors.messageBubble,
-            child: Text(
-              userName[0].toUpperCase(),
-              style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+            child: Stack(
+              children: [
+                Center(
+                  child: Text(
+                    userName[0].toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 12),
