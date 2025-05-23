@@ -19,4 +19,7 @@ class AppColors {
   static const Color verifiedIcon = Color(0xFFB00020);
   static const Color iconColor = Color(0xFFFFFFFF);
   static const Color secondaryText = Color(0xFF888888); 
-}
+  static const Color senderText = Color(0xFF757575);        // Grey for sender name
+  static const Color timestampText = Color(0xFF9E9E9E);     // Lighter grey for timestamp
+
+} // End of color definitions

@@ -30,17 +30,16 @@ class ChatBubble extends StatelessWidget {
             crossAxisAlignment:
                 message.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
-              if (!message.isMe)
                 Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 4),
-                  child: Text(
-                    message.senderName,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.timestamp,
-                      fontFamily: 'SF Pro Display',
-                    ),
+                padding: const EdgeInsets.only(left: 4, bottom: 4),
+                child: Text(
+                  message.isMe ? 'You' : message.senderName,
+                  style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.timestamp,
+                  fontFamily: 'SF Pro Display',
                   ),
+                ),
                 ),
               Container(
                 constraints: BoxConstraints(
