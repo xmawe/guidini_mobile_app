@@ -3,13 +3,13 @@ import '../../constants/colors.dart';
 import '../../constants/text_styles.dart';
 
 class ChatInput extends StatelessWidget {
-  final TextEditingController controller;
-  final VoidCallback onSend;
+  final TextEditingController? controller;
+  final VoidCallback? onSend;
 
   const ChatInput({
     Key? key,
-    required this.controller,
-    required this.onSend,
+    this.controller,
+    this.onSend,
   }) : super(key: key);
 
   @override
@@ -18,30 +18,34 @@ class ChatInput extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
         color: AppColors.background,
+        border: Border(
+          top: BorderSide(
+            color: AppColors.divider,
+            width: 1,
+          ),
+        ),
       ),
       child: Row(
         children: [
           Expanded(
             child: Container(
-              height: 36,
+              height: 40,
               decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppColors.inputBorder,
-                  width: 1,
-                ),
+                color: AppColors.inputBackground,
+                borderRadius: BorderRadius.circular(5),
               ),
               child: TextField(
                 controller: controller,
-                style: chatMessageTextStyle,
+                style: chatMessageTextStyle.copyWith(
+                  color: AppColors.inputText,
+                ),
                 decoration: const InputDecoration(
                   hintText: 'Message',
                   hintStyle: inputHintTextStyle,
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: 8,
+                    vertical: 10,
                   ),
                 ),
               ),
@@ -49,21 +53,23 @@ class ChatInput extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Container(
-            width: 36,
-            height: 36,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: AppColors.sendButton,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(5),
             ),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(5),
                 onTap: onSend,
-                child: Icon(
-                  Icons.send,
-                  color: AppColors.iconColor,
-                  size: 16,
+                child: const Center(
+                  child: Icon(
+                    Icons.send,
+                    color: AppColors.iconColor,
+                    size: 20,
+                  ),
                 ),
               ),
             ),

@@ -20,40 +20,49 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: AppColors.background,
-      elevation: 1,
+      elevation: 0.5,
       automaticallyImplyLeading: false,
       titleSpacing: 0,
       title: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            icon: const Icon(Icons.arrow_back, color: Colors.black87),
             onPressed: () => Navigator.pop(context),
           ),
-          const CircleAvatar(
-            radius: 22,
-            backgroundColor: Color(0xFFD9D9D9),
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: AppColors.messageBubble,
+            child: Text(
+              userName[0].toUpperCase(),
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
                   children: [
                     Text(
                       userName,
                       style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                         fontFamily: 'SF Pro Display',
                       ),
                     ),
                     const SizedBox(width: 4),
                     const Icon(
                       Icons.verified,
-                      color: AppColors.verifiedIcon,
-                      size: 18,
+                      color: Color(0xFF7A0000), // Matching your red theme
+                      size: 14,
                     ),
                   ],
                 ),
@@ -62,26 +71,27 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
                   children: [
                     Text(
                       userLocation,
-                      style: const TextStyle(
-                        color: AppColors.profileLocation,
+                      style: TextStyle(
+                        color: Colors.red[800],
                         fontSize: 13,
                         fontFamily: 'SF Pro Display',
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     const Icon(
                       Icons.star,
-                      size: 15,
-                      color: Colors.black,
+                      size: 14,
+                      color: Color(0xFF7A0000), // Changed from amber to red
                     ),
+                    const SizedBox(width: 2),
                     Text(
                       rating.toString(),
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: Color(0xFF7A0000),
                         fontSize: 13,
                         fontFamily: 'SF Pro Display',
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/chat_screen.dart';
+import 'screens/onboard_screen.dart'; // Import the OnboardScreen
 
 void main() {
   runApp(const MyApp());
@@ -11,17 +11,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Chat App',
+      title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF8B0000)),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      debugShowCheckedModeBanner: false,
-      home: const ChatScreen(
-        userName: 'Ahmed El Yassifi',
-        userLocation: 'Marrakech, Morocco',
-        rating: 4.5,
-      ),
+      debugShowCheckedModeBanner: false, // Remove the debug badge
+      home: const OnboardScreen(), // Set OnboardScreen as the home widget
     );
   }
 }
