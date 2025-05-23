@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../colors.dart';
 
 class OnboardScreen extends StatelessWidget {
   const OnboardScreen({Key? key}) : super(key: key);
@@ -28,7 +29,7 @@ class OnboardScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      'Guidya',
+                      'Guidini',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 60,
@@ -52,7 +53,7 @@ class OnboardScreen extends StatelessWidget {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF910000),
+                          foregroundColor: AppColors.primary800,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           textStyle: const TextStyle(
                             fontSize: 18,
@@ -61,7 +62,28 @@ class OnboardScreen extends StatelessWidget {
                                 'InstrumentSans', // 👈 Use your custom font
                           ),
                         ),
-                        child: const Text('Bismillah, Let’s Go!'),
+                        child: const Text("Bismillah, Let's Go!"),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Handle button press here
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary800,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          textStyle: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily:
+                                'InstrumentSans', // 👈 Use your custom font
+                          ),
+                        ),
+                        child: const Text("Sign In"),
                       ),
                     ),
                   ],

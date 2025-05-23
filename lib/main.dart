@@ -1,5 +1,5 @@
+import 'package:Guidini/screens/auth/register_screen.dart';
 import 'package:flutter/material.dart';
-import 'screens/onboard_screen.dart'; // Import the OnboardScreen
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false, // Remove the debug badge
-      home: const OnboardScreen(), // Set OnboardScreen as the home widget
+      home: const RegisterScreen(), // Set OnboardScreen as the home widget
     );
   }
 }
