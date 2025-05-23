@@ -55,9 +55,11 @@ class ChatBubble extends StatelessWidget {
                       ? AppColors.sendButton
                       : AppColors.messageBubble,
                   borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(6),
-                    topRight: message.isMe
-                        ? Radius.zero
+                    topLeft: message.isMe 
+                        ? const Radius.circular(6)
+                        : Radius.zero,
+                    topRight: message.isMe 
+                        ? Radius.zero 
                         : const Radius.circular(6),
                     bottomLeft: const Radius.circular(6),
                     bottomRight: const Radius.circular(6),
