@@ -35,9 +35,9 @@ class ChatBubble extends StatelessWidget {
                 child: Text(
                   message.isMe ? 'You' : message.senderName,
                   style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.timestamp,
-                  fontFamily: 'SF Pro Display',
+                    fontSize: 12,
+                    color: AppColors.senderText,
+                    fontFamily: 'SF Pro Display',
                   ),
                 ),
                 ),
@@ -51,7 +51,7 @@ class ChatBubble extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: message.isMe
-                      ? AppColors.sendButton
+                      ? AppColors.messageBubbleMe
                       : AppColors.messageBubble,
                   borderRadius: BorderRadius.only(
                     topLeft: message.isMe 
