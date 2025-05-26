@@ -26,4 +26,4 @@ flutter:
         - asset: lib/assets/fonts/InstrumentSans-Bold.ttf
           weight: 700
   assets:
-    - lib/assets/images/
+    - lib/assets/images/nav_icons/

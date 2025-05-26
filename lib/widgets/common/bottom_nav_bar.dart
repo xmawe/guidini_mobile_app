@@ -44,8 +44,8 @@ class BottomNavBar extends StatelessWidget {
                 onTap: () => onTap(1),
               ),
               _NavItem(
-                icon: Icons.calendar_today_outlined,
-                selectedIcon: Icons.calendar_today,
+                icon: Icons.confirmation_number_outlined,
+                selectedIcon: Icons.confirmation_number,
                 label: 'Bookings',
                 isSelected: currentIndex == 2,
                 onTap: () => onTap(2),
@@ -86,20 +86,20 @@ class _NavItem extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: SizedBox(
-        width: 80,
+        width: 90,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               isSelected ? selectedIcon : icon,
+              size: 18,
               color: isSelected ? AppColors.primary800 : AppColors.gray400,
-              size: 24,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 color: isSelected ? AppColors.primary800 : AppColors.gray400,
                 fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
               ),
