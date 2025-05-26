@@ -20,9 +20,16 @@ class ChatBubble extends StatelessWidget {
             message.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!message.isMe) ...[
-            const CircleAvatar(
+            CircleAvatar(
               radius: 16,
-              backgroundColor: Colors.grey,
+              backgroundColor: AppColors.gray200,
+              child: Text(
+                message.senderName[0].toUpperCase(),
+                style: const TextStyle(
+                  color: AppColors.gray900,
+                  fontSize: 12,
+                ),
+              ),
             ),
             const SizedBox(width: 8),
           ],
@@ -36,7 +43,7 @@ class ChatBubble extends StatelessWidget {
                   message.senderName,
                   style: const TextStyle(
                     fontSize: 12,
-                    color: AppColors.senderText,
+                    color: AppColors.gray600,
                     fontFamily: 'SF Pro Display',
                   ),
                 ),
@@ -51,8 +58,8 @@ class ChatBubble extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: message.isMe
-                      ? AppColors.messageBubbleMe
-                      : AppColors.messageBubble,
+                      ? AppColors.primary
+                      : AppColors.gray050,
                   borderRadius: BorderRadius.only(
                     topLeft: message.isMe 
                         ? const Radius.circular(6)
@@ -85,7 +92,7 @@ class ChatBubble extends StatelessWidget {
                       Icon(
                         message.isRead ? Icons.done_all : Icons.done,
                         size: 14,
-                        color: AppColors.timestamp,
+                        color: AppColors.gray400,
                       ),
                     ],
                   ],

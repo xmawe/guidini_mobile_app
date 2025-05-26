@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 import 'colors.dart';
 
-// Main chat message text style (from screenshot)
+// Main chat message text style
 const TextStyle chatMessageTextStyle = TextStyle(
   fontSize: 14,
-  color: AppColors.messageText,
+  color: AppColors.gray900,
   fontFamily: 'SF Pro Display',
   fontWeight: FontWeight.w400,
 );
 
-// User message text style (white on dark red bubble)
+// User message text style
 const TextStyle userMessageTextStyle = TextStyle(
   fontSize: 14,
-  color: AppColors.messageTextMe,
+  color: Colors.white,
   fontFamily: 'SF Pro Display',
   fontWeight: FontWeight.w400,
 );
 
-// Timestamp text style (grey, small)
+// Timestamp text style
 const TextStyle timestampTextStyle = TextStyle(
   fontSize: 11,
-  color: AppColors.timestamp,
+  color: AppColors.gray400,
   fontFamily: 'SF Pro Display',
   fontWeight: FontWeight.w400,
 );
@@ -28,7 +28,7 @@ const TextStyle timestampTextStyle = TextStyle(
 // Input hint text style
 const TextStyle inputHintTextStyle = TextStyle(
   fontSize: 14,
-  color: AppColors.inputHint,
+  color: AppColors.gray400,
   fontFamily: 'SF Pro Display',
   fontWeight: FontWeight.w400,
 );
@@ -36,7 +36,7 @@ const TextStyle inputHintTextStyle = TextStyle(
 // Profile name text style
 const TextStyle profileNameTextStyle = TextStyle(
   fontSize: 15,
-  color: AppColors.profileName,
+  color: AppColors.gray900,
   fontFamily: 'SF Pro Display',
   fontWeight: FontWeight.w600,
 );
@@ -44,7 +44,7 @@ const TextStyle profileNameTextStyle = TextStyle(
 // Profile location text style
 const TextStyle profileLocationTextStyle = TextStyle(
   fontSize: 11,
-  color: AppColors.profileLocation,
+  color: AppColors.gray500,
   fontFamily: 'SF Pro Display',
   fontWeight: FontWeight.w400,
 );

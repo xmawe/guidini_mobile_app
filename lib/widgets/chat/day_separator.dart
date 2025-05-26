@@ -12,30 +12,30 @@ class DaySeparator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       child: Row(
         children: [
           Expanded(
-            child: Divider(
+            child: Container(
+              height: 1,
               color: AppColors.gray200,
-              thickness: 1,
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               day,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.gray500,
-                fontSize: 12,
-                fontFamily: 'SF Pro Display',
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Expanded(
-            child: Divider(
+            child: Container(
+              height: 1,
               color: AppColors.gray200,
-              thickness: 1,
             ),
           ),
         ],

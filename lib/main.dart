@@ -1,23 +1,56 @@
 import 'package:flutter/material.dart';
-import 'screens/onboard_screen.dart'; // Import the OnboardScreen
+import 'constants/colors.dart';
+import 'models/chat_room.dart';
+import 'screens/chat_list_screen.dart';
+import 'screens/chat_screen.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Guidini',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primaryColor: AppColors.primary,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: IconThemeData(color: AppColors.gray900),
+          titleTextStyle: TextStyle(
+            color: AppColors.gray900,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          primary: AppColors.primary,
+          secondary: AppColors.secondary,
+          background: Colors.white,
+          surface: Colors.white,
+        ),
       ),
-      debugShowCheckedModeBanner: false, // Remove the debug badge
-      home: const OnboardScreen(), // Set OnboardScreen as the home widget
+      initialRoute: '/',
+      onGenerateRoute: (settings) {
+        if (settings.name == '/') {
+          return MaterialPageRoute(
+            builder: (context) => const ChatListScreen(),
+          );
+        } else if (settings.name == '/chat') {
+          final chat = settings.arguments as ChatRoom;
+          return MaterialPageRoute(
+            builder: (context) => ChatScreen(chat: chat),
+          );
+        }
+        return null;
+      },
     );
   }
 }
