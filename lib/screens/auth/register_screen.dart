@@ -2,8 +2,9 @@ import 'package:Guidini/model/city.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../../../colors.dart';
-import 'package:Guidini/components/custom_input_field.dart.dart';
+import '../../constants/colors.dart';
+import 'package:Guidini/widgets/custom_input_field.dart.dart';
+import 'package:Guidini/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -126,25 +127,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      final response = await http.post(
-        Uri.parse('http://192.168.200.8:8000/api/register'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: json.encode({
-          'firstName': _firstNameController.text,
-          'lastName': _lastNameController.text,
-          'email': _emailController.text,
-          'phoneNumber': _phoneController.text,
-          'cityId': _selectedCityId,
-          'password': _passwordController.text,
-        }),
+      final result = await AuthService.register(
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        email: _emailController.text,
+        phoneNumber: _phoneController.text,
+        cityId: _selectedCityId!,
+        password: _passwordController.text,
       );
 
-      final responseData = json.decode(response.body);
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
+      if (result['success']) {
         // Registration successful
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -153,27 +145,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
               backgroundColor: Colors.green,
             ),
           );
-          // Navigate to login or home screen
-          // Navigator.pushReplacementNamed(context, '/login');
+
+          // Navigate to home screen
+          Navigator.pushReplacementNamed(context, '/home');
         }
-      } else if (response.statusCode == 422) {
-        // Validation errors
-        if (responseData['errors'] != null) {
+      } else {
+        // Handle errors
+        if (result['errors'] != null) {
           setState(() {
-            _errors = Map<String, String>.from(responseData['errors'].map((key,
+            _errors = Map<String, String>.from(result['errors'].map((key,
                     value) =>
                 MapEntry(key, value is List ? value.first : value.toString())));
           });
-        }
-      } else {
-        // Other errors
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(responseData['message'] ?? 'Registration failed'),
-              backgroundColor: Colors.red,
-            ),
-          );
+        } else {
+          // Show general error message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result['message'] ?? 'Registration failed'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       }
     } catch (e) {
@@ -492,9 +485,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                Navigator.pop(context);
-                                // Or navigate to login screen
-                                // Navigator.pushReplacementNamed(context, '/login');
+                                Navigator.pushReplacementNamed(
+                                    context, '/login');
                               },
                               child: Text(
                                 'Login',

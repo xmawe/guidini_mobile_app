@@ -1,6 +1,6 @@
-import 'package:Guidini/components/custom_input_field.dart.dart';
+import 'package:Guidini/widgets/custom_input_field.dart.dart';
 import 'package:flutter/material.dart';
-import '../../../colors.dart';
+import '../../constants/colors.dart';
 
 class VefiryEmailScreen extends StatelessWidget {
   const VefiryEmailScreen({Key? key}) : super(key: key);

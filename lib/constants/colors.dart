@@ -24,4 +24,26 @@ class AppColors {
   static const Color gray800 = Color(0xFF404040);
   static const Color gray900 = Color(0xFF262626);
   static const Color gray950 = Color(0xFF1C1C1C);
+
+  // Semantic Colors (mapped to new scheme)
+  static const Color background = Color(0xFFFFFFFF);
+  static const Color messageBubble = gray050;
+  static const Color messageBubbleMe = primary700;
+  static const Color messageText = gray900;
+  static const Color messageTextMe = Color(0xFFFFFFFF);
+  static const Color inputBorder = gray100;
+  static const Color inputBackground = gray050;
+  static const Color inputText = gray900;
+  static const Color inputHint = gray400;
+  static const Color sendButton = primary700;
+  static const Color divider = gray100;
+  static const Color timestamp = gray600;
+  static const Color profileName = gray900;
+  static const Color profileLocation = primary700;
+  static const Color profileRating = primary700;
+  static const Color verifiedIcon = primary700;
+  static const Color iconColor = Color(0xFFFFFFFF);
+  static const Color secondaryText = gray600;
+  static const Color senderText = gray700;
+  static const Color timestampText = gray500;
 }

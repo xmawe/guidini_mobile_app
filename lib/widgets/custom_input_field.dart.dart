@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../colors.dart';
+import '../constants/colors.dart';
 
 /// A helper function to create consistent InputDecoration
 InputDecoration customInputDecoration({

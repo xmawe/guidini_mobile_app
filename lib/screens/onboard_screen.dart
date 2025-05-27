@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
-import '../colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../constants/colors.dart';
 
 class OnboardScreen extends StatelessWidget {
   const OnboardScreen({Key? key}) : super(key: key);
+
+  Future<void> _setFirstTimeComplete() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('first_time', false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,18 +54,24 @@ class OnboardScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Handle button press here
+                        onPressed: () async {
+                          await _setFirstTimeComplete();
+                          if (context.mounted) {
+                            Navigator.pushReplacementNamed(
+                                context, '/register');
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: AppColors.primary800,
                           padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           textStyle: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            fontFamily:
-                                'InstrumentSans', // 👈 Use your custom font
+                            fontFamily: 'InstrumentSans',
                           ),
                         ),
                         child: const Text("Bismillah, Let's Go!"),
@@ -69,18 +81,23 @@ class OnboardScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Handle button press here
+                        onPressed: () async {
+                          await _setFirstTimeComplete();
+                          if (context.mounted) {
+                            Navigator.pushReplacementNamed(context, '/login');
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary800,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           textStyle: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            fontFamily:
-                                'InstrumentSans', // 👈 Use your custom font
+                            fontFamily: 'InstrumentSans',
                           ),
                         ),
                         child: const Text("Sign In"),

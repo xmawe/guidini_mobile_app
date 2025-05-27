@@ -1,0 +1,2 @@
+C:/Users/user/Desktop/study/4th-s/technologies-mobiles-et-developpement-des-si/guidini/guidini_mobile_app/android/app/.cxx/Debug/n2x91z3d/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/user/Desktop/study/4th-s/technologies-mobiles-et-developpement-des-si/guidini/guidini_mobile_app/android/app/.cxx/Debug/n2x91z3d/arm64-v8a/CMakeFiles/rebuild_cache.dir
