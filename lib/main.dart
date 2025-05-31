@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:guidini/providers/user_role_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:Guidini/screens/onboard_screen.dart';
-import 'package:Guidini/screens/auth/login_screen.dart';
-import 'package:Guidini/screens/auth/register_screen.dart';
-import 'package:Guidini/layouts/main_navigation_screen.dart'; // Add this import
-import 'package:Guidini/services/auth_service.dart';
-import "package:Guidini/constants/colors.dart";
+import 'package:guidini/screens/onboard_screen.dart';
+import 'package:guidini/screens/auth/login_screen.dart';
+import 'package:guidini/screens/auth/register_screen.dart';
+import 'package:guidini/layouts/main_navigation_screen.dart';
+import 'package:guidini/services/auth_service.dart';
+import "package:guidini/constants/colors.dart";
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,21 +18,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Guidini',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary800),
-        useMaterial3: true,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserRoleProvider()),
+      ],
+      child: MaterialApp(
+        title: 'guidini',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary800),
+          useMaterial3: true,
+        ),
+        debugShowCheckedModeBanner: false,
+        home: const AuthWrapper(),
+        routes: {
+          '/onboard': (context) => const OnboardScreen(),
+          '/login': (context) => const LoginScreen(),
+          '/register': (context) => const RegisterScreen(),
+          '/home': (context) => const MainNavigationScreen(),
+          '/main': (context) => const MainNavigationScreen(),
+        },
       ),
-      debugShowCheckedModeBanner: false,
-      home: const AuthWrapper(),
-      routes: {
-        '/onboard': (context) => const OnboardScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/home': (context) => const MainNavigationScreen(),
-        '/main': (context) => const MainNavigationScreen(),
-      },
     );
   }
 }
@@ -71,6 +78,13 @@ class _AuthWrapperState extends State<AuthWrapper> {
           // Token is invalid, clear it
           await prefs.remove('auth_token');
           await prefs.remove('user_data');
+        } else {
+          // Initialize user role provider with user data
+          final userData = await AuthService.getUserData();
+          if (mounted) {
+            await Provider.of<UserRoleProvider>(context, listen: false)
+                .initialize(userData);
+          }
         }
 
         setState(() {
@@ -106,7 +120,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     if (_isFirstTime) {
       return const OnboardScreen();
     } else if (_isLoggedIn) {
-      return const MainNavigationScreen(); // Changed this line
+      return const MainNavigationScreen();
     } else {
       return const OnboardScreen();
     }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:Guidini/constants/colors.dart';
-import 'package:Guidini/screens/loggedin/profile_settings_screen.dart';
+import 'package:guidini/constants/colors.dart';
+import 'package:guidini/screens/loggedin/profile_settings_screen.dart';
 
 enum HeaderTheme { light, dark }
 

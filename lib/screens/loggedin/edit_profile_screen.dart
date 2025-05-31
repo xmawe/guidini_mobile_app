@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:Guidini/model/city.dart';
+import 'package:guidini/models/city.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../constants/colors.dart';
-import 'package:Guidini/widgets/custom_input_field.dart.dart';
-import 'package:Guidini/services/auth_service.dart';
+import 'package:guidini/widgets/custom_input_field.dart.dart';
+import 'package:guidini/services/auth_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({Key? key}) : super(key: key);

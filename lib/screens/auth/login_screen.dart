@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
-import 'package:Guidini/widgets/custom_input_field.dart.dart';
-import 'package:Guidini/services/auth_service.dart';
+import 'package:guidini/widgets/custom_input_field.dart.dart';
+import 'package:guidini/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);

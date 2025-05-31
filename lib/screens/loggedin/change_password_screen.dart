@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../constants/colors.dart';
-import 'package:Guidini/widgets/custom_input_field.dart.dart';
-import 'package:Guidini/services/auth_service.dart';
+import 'package:guidini/widgets/custom_input_field.dart.dart';
+import 'package:guidini/services/auth_service.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({Key? key}) : super(key: key);

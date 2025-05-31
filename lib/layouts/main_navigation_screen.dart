@@ -1,13 +1,20 @@
-import 'package:Guidini/constants/colors.dart';
-import 'package:Guidini/screens/home_screen.dart';
-import 'package:Guidini/screens/loggedin/bookings_screen.dart';
-import 'package:Guidini/screens/loggedin/conversations_screen.dart';
-import 'package:Guidini/screens/public/search_screen.dart';
-import 'package:Guidini/widgets/user_header.dart';
-import 'package:Guidini/services/auth_service.dart';
+// lib/layouts/main_navigation_screen.dart
+import 'package:guidini/constants/colors.dart';
+import 'package:guidini/screens/home_screen.dart';
+import 'package:guidini/screens/loggedin/bookings_screen.dart';
+import 'package:guidini/screens/loggedin/conversations_screen.dart';
+import 'package:guidini/screens/public/search_screen.dart';
+// Import guide screens
+import 'package:guidini/screens/guide/guide_dashboard_screen.dart';
+import 'package:guidini/screens/guide/my_tours_screen.dart';
+import 'package:guidini/screens/guide/guide_bookings_screen.dart';
+import 'package:guidini/widgets/user_header.dart';
+import 'package:guidini/services/auth_service.dart';
+import 'package:guidini/providers/user_role_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({Key? key}) : super(key: key);
@@ -34,6 +41,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         _userData = userData;
         _isLoadingUserData = false;
       });
+
+      // Update user role provider with latest user data
+      if (mounted) {
+        Provider.of<UserRoleProvider>(context, listen: false)
+            .updateUserData(userData ?? {});
+      }
     } catch (e) {
       print('Error loading user data: $e');
       setState(() {
@@ -49,51 +62,64 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _getCurrentScreen() {
-    switch (_selectedIndex) {
-      case 0:
-        return const HomeScreen();
-      case 1:
-        return const SearchScreen();
-      case 2:
-        return const BookingsScreen();
-      case 3:
-        return const ConversationsScreen();
-      default:
-        return const HomeScreen();
+    final userRoleProvider = Provider.of<UserRoleProvider>(context);
+
+    if (userRoleProvider.isTourist) {
+      // Tourist screens
+      switch (_selectedIndex) {
+        case 0:
+          return const HomeScreen();
+        case 1:
+          return const SearchScreen();
+        case 2:
+          return const BookingsScreen();
+        case 3:
+          return const ConversationsScreen();
+        default:
+          return const HomeScreen();
+      }
+    } else {
+      // Guide screens
+      switch (_selectedIndex) {
+        case 0:
+          return const GuideDashboardScreen();
+        case 1:
+          return const MyToursScreen();
+        case 2:
+          return const GuideBookingsScreen();
+        case 3:
+          return const ConversationsScreen();
+        default:
+          return const GuideDashboardScreen();
+      }
     }
   }
 
   HeaderTheme _getCurrentHeaderTheme() {
     // Home screen uses dark theme, others use light
-    return _selectedIndex == 0 ? HeaderTheme.dark : HeaderTheme.light;
+    final userRoleProvider = Provider.of<UserRoleProvider>(context);
+
+    return _selectedIndex == 0 && userRoleProvider.isTourist
+        ? HeaderTheme.dark
+        : HeaderTheme.light;
   }
 
   SystemUiOverlayStyle _getCurrentSystemOverlayStyle() {
+    final userRoleProvider = Provider.of<UserRoleProvider>(context);
     // Home screen uses light overlay (for dark background), others use dark
-    return _selectedIndex == 0
+    return _selectedIndex == 0 && userRoleProvider.isTourist
         ? SystemUiOverlayStyle.light
         : SystemUiOverlayStyle.dark;
   }
 
-  // Color _getCurrentBackgroundColor() {
-  //   // Home screen has gradient, others have white background
-  //   return _selectedIndex == 0 ? AppColors.primary800 : Colors.white;
-  // }
-
   Widget _buildScreenContent() {
-    if (_selectedIndex == 0) {
+    final userRoleProvider = Provider.of<UserRoleProvider>(context);
+    if (_selectedIndex == 0 && userRoleProvider.isTourist) {
       // Home screen with gradient background
       return Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.primary800,
-              AppColors.primary800.withOpacity(0.8),
-            ],
-          ),
+          color: AppColors.primary800,
         ),
         child: SafeArea(
           child: Column(
@@ -138,90 +164,55 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       );
     }
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: _getCurrentSystemOverlayStyle(),
-      child: Scaffold(
-        body: _buildScreenContent(),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 5,
-                offset: const Offset(0, -1),
-              ),
-            ],
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildNavItem(
-                    icon: SvgPicture.asset(
-                      'lib/assets/icons/home_inactive.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                    activeIcon: SvgPicture.asset(
-                      'lib/assets/icons/home_active.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                    label: 'Home',
-                    index: 0,
-                  ),
-                  _buildNavItem(
-                    icon: SvgPicture.asset(
-                      'lib/assets/icons/search_refraction_inactive.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                    activeIcon: SvgPicture.asset(
-                      'lib/assets/icons/search_refraction_active.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                    label: 'Search',
-                    index: 1,
-                  ),
-                  _buildNavItem(
-                    icon: SvgPicture.asset(
-                      'lib/assets/icons/ticket_02_inactive.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                    activeIcon: SvgPicture.asset(
-                      'lib/assets/icons/ticket_02_active.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                    label: 'Bookings',
-                    index: 2,
-                  ),
-                  _buildNavItem(
-                    icon: SvgPicture.asset(
-                      'lib/assets/icons/message_text_circle_02_inactive.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                    activeIcon: SvgPicture.asset(
-                      'lib/assets/icons/message_text_circle_02_active.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                    label: 'Conversations',
-                    index: 3,
+    return Consumer<UserRoleProvider>(
+      builder: (context, userRoleProvider, child) {
+        final navigationItems = userRoleProvider.getNavigationItems();
+
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: _getCurrentSystemOverlayStyle(),
+          child: Scaffold(
+            body: _buildScreenContent(),
+            bottomNavigationBar: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: const Offset(0, -1),
                   ),
                 ],
               ),
+              child: SafeArea(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: navigationItems.map((item) {
+                      return _buildNavItem(
+                        icon: SvgPicture.asset(
+                          item.icon,
+                          width: 24,
+                          height: 24,
+                        ),
+                        activeIcon: SvgPicture.asset(
+                          item.activeIcon,
+                          width: 24,
+                          height: 24,
+                        ),
+                        label: item.label,
+                        index: item.index,
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
