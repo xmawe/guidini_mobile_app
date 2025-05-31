@@ -458,15 +458,39 @@ class ChatService {
   }
 
   // Search conversations
-  Future<dynamic> searchConversations(String query) async {
+  Future<Map<String, dynamic>> searchConversations(String query) async {
     try {
+      print('Searching conversations with query: $query');
       final response = await _dio.get(
         '/chat/search',
         queryParameters: {'query': query},
       );
-      return response.data;
+      
+      print('API Response for search: ${response.data}');
+      
+      // Extract the data from the response
+      dynamic responseData = response.data;
+      
+      // If response is a string (JSON string), try to parse it
+      if (responseData is String) {
+        try {
+          responseData = json.decode(responseData);
+          print('Parsed JSON string response: $responseData');
+        } catch (e) {
+          print('Error parsing JSON string: $e');
+        }
+      }
+      
+      return {
+        'success': true,
+        'data': responseData,
+      };
     } catch (e) {
-      throw _handleError(e);
+      print('Error searching conversations: $e');
+      return {
+        'success': false,
+        'message': _handleError(e).toString(),
+      };
     }
   }
 

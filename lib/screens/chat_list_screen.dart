@@ -22,11 +22,25 @@ class _ChatListScreenState extends State<ChatListScreen> {
   bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
+  
+  // Search related variables
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
+  List<ChatRoom> _searchResults = [];
+  bool _isSearchLoading = false;
+  bool _hasSearchError = false;
+  String _searchErrorMessage = '';
 
   @override
   void initState() {
     super.initState();
     _loadChatRooms();
+  }
+  
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadChatRooms() async {
@@ -99,6 +113,71 @@ class _ChatListScreenState extends State<ChatListScreen> {
       });
     }
   }
+  
+  Future<void> _searchConversations(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _isSearching = false;
+        _searchResults = [];
+      });
+      return;
+    }
+    
+    setState(() {
+      _isSearching = true;
+      _isSearchLoading = true;
+      _hasSearchError = false;
+    });
+    
+    try {
+      final result = await _chatService.searchConversations(query);
+      
+      if (result['success'] == true) {
+        List<ChatRoom> searchResults = [];
+        
+        // Extract conversations from the response
+        final data = result['data'];
+        if (data is Map<String, dynamic> && data.containsKey('conversations')) {
+          final conversations = data['conversations'];
+          if (conversations is List) {
+            for (var room in conversations) {
+              try {
+                final chatRoom = ChatRoom.fromJson(room);
+                searchResults.add(chatRoom);
+              } catch (e) {
+                print('Error parsing search result: $e');
+              }
+            }
+          }
+        }
+        
+        setState(() {
+          _searchResults = searchResults;
+          _isSearchLoading = false;
+        });
+      } else {
+        setState(() {
+          _hasSearchError = true;
+          _searchErrorMessage = result['message'] ?? 'Failed to get search results';
+          _isSearchLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _hasSearchError = true;
+        _searchErrorMessage = e.toString();
+        _isSearchLoading = false;
+      });
+    }
+  }
+  
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() {
+      _isSearching = false;
+      _searchResults = [];
+    });
+  }
 
   void _onNavTap(int index) {
     setState(() {
@@ -115,6 +194,54 @@ class _ChatListScreenState extends State<ChatListScreen> {
     _loadChatRooms();
   }
 
+  // For testing/debugging search functionality
+  void _testSearchWithMockData() {
+    final mockResponse = {
+      "conversations": [
+        {
+          "id": 2,
+          "other_user": {
+            "id": 1,
+            "name": "Ahmed El Yassifi",
+            "profile_picture": "profiles/ahmed.jpg",
+            "last_activity_at": "2025-05-31T07:08:49.000000Z",
+            "is_online": false
+          },
+          "last_message": {
+            "content": "Hi, any new??",
+            "created_at": "2025-05-31T21:38:18.000000Z",
+            "is_from_me": true
+          },
+          "unread_count": 0
+        }
+      ],
+      "total": 1
+    };
+    
+    List<ChatRoom> searchResults = [];
+    
+    if (mockResponse.containsKey('conversations')) {
+      final conversations = mockResponse['conversations'];
+      if (conversations is List) {
+        for (var room in conversations) {
+          try {
+            final chatRoom = ChatRoom.fromJson(room);
+            searchResults.add(chatRoom);
+          } catch (e) {
+            print('Error parsing mock search result: $e');
+          }
+        }
+      }
+    }
+    
+    setState(() {
+      _isSearching = true;
+      _isSearchLoading = false;
+      _hasSearchError = false;
+      _searchResults = searchResults;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,108 +255,274 @@ class _ChatListScreenState extends State<ChatListScreen> {
               userName: 'Mohamed Jahid',
               subtitle: 'Ready for a tour?',
             ),
+            
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search conversations...',
+                  suffixIcon: _isSearching 
+                    ? IconButton(
+                        icon: const Icon(Icons.close, color: AppColors.gray500),
+                        onPressed: _clearSearch,
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.search, color: AppColors.primary800),
+                        onPressed: () {
+                          if (_searchController.text.trim().isNotEmpty) {
+                            _searchConversations(_searchController.text);
+                          }
+                        },
+                      ),
+                  filled: true,
+                  fillColor: AppColors.gray100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                ),
+                onChanged: (value) {
+                  // Debounce search for better UX
+                  if (value.trim().isEmpty) {
+                    _clearSearch();
+                  } else {
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      if (value == _searchController.text && value.trim().isNotEmpty) {
+                        _searchConversations(value);
+                      }
+                    });
+                  }
+                },
+                onSubmitted: (value) {
+                  if (value.trim().isNotEmpty) {
+                    _searchConversations(value);
+                  }
+                },
+              ),
+            ),
+            
             // Chat List
             Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _hasError
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.error_outline,
-                                  size: 48,
-                                  color: AppColors.error,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Error loading chats',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  _errorMessage,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: AppColors.gray600,
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: _loadChatRooms,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primary800,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                      child: const Text('Try Again'),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    ElevatedButton(
-                                      onPressed: _clearCacheAndReload,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.gray600,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                      child: const Text('Clear Cache & Reload'),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          )
-                        : _chatRooms.isEmpty
+                child: _isSearching 
+                    ? _isSearchLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _hasSearchError
                             ? Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     const Icon(
-                                      Icons.chat_bubble_outline,
+                                      Icons.error_outline,
                                       size: 48,
-                                      color: AppColors.gray400,
+                                      color: AppColors.error,
                                     ),
                                     const SizedBox(height: 16),
                                     const Text(
-                                      'No chats yet',
+                                      'Error searching',
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    const Text(
-                                      'Your conversations will appear here',
-                                      style: TextStyle(
+                                    Text(
+                                      _searchErrorMessage,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
                                         color: AppColors.gray600,
                                       ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        // Make a raw API call to debug
+                                        _chatService.getRawApiResponse('/chat/search?query=${_searchController.text}')
+                                          .then((response) {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) => AlertDialog(
+                                                title: const Text('Debug Info'),
+                                                content: SingleChildScrollView(
+                                                  child: Text(
+                                                    'Raw Response:\n${response['data'] ?? 'No data'}\n\nStatus: ${response['success'] ? 'Success' : 'Failed'}',
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(context),
+                                                    child: const Text('Close'),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          });
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.gray600,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      child: const Text('View API Response'),
                                     ),
                                   ],
                                 ),
                               )
-                            : RefreshIndicator(
-                                onRefresh: () async {
-                                  await _loadChatRooms();
-                                },
-                                color: AppColors.primary800,
-                                child: ChatListView(
-                                  chatRooms: _chatRooms,
-                                  onChatSelected: (chat) {
-                                    Navigator.pushNamed(
-                                      context,
-                                      '/chat',
-                                      arguments: chat,
-                                    ).then((_) {
-                                      _loadChatRooms();
-                                    });
-                                  },
+                            : _searchResults.isEmpty
+                                ? Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.search_off,
+                                          size: 48,
+                                          color: AppColors.gray400,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        const Text(
+                                          'No results found',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'No conversations match "${_searchController.text}"',
+                                          style: const TextStyle(
+                                            color: AppColors.gray600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : ChatListView(
+                                    chatRooms: _searchResults,
+                                    onChatSelected: (chat) {
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/chat',
+                                        arguments: chat,
+                                      ).then((_) {
+                                        if (_isSearching) {
+                                          _searchConversations(_searchController.text);
+                                        } else {
+                                          _loadChatRooms();
+                                        }
+                                      });
+                                    },
+                                  )
+                    : _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _hasError
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.error_outline,
+                                      size: 48,
+                                      color: AppColors.error,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Error loading chats',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      _errorMessage,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: AppColors.gray600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: _loadChatRooms,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary800,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          child: const Text('Try Again'),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        ElevatedButton(
+                                          onPressed: _clearCacheAndReload,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.gray600,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          child: const Text('Clear Cache & Reload'),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ),
+                              )
+                            : _chatRooms.isEmpty
+                                ? Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.chat_bubble_outline,
+                                          size: 48,
+                                          color: AppColors.gray400,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        const Text(
+                                          'No chats yet',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Text(
+                                          'Your conversations will appear here',
+                                          style: TextStyle(
+                                            color: AppColors.gray600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 24),
+                                        // For development/testing only
+                                        ElevatedButton(
+                                          onPressed: _testSearchWithMockData,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary800,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          child: const Text('Test Search (Debug)'),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : RefreshIndicator(
+                                    onRefresh: () async {
+                                      await _loadChatRooms();
+                                    },
+                                    color: AppColors.primary800,
+                                    child: ChatListView(
+                                      chatRooms: _chatRooms,
+                                      onChatSelected: (chat) {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/chat',
+                                          arguments: chat,
+                                        ).then((_) {
+                                          _loadChatRooms();
+                                        });
+                                      },
+                                    ),
+                                  ),
             ),
           ],
         ),
