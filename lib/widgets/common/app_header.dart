@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 import 'notification_bell.dart';
+import '../../utils/string_utils.dart';
 
 class AppHeader extends StatelessWidget {
   final String title;
   final bool showNotification;
   final String? subtitle;
-  final String userInitials;
+  final String userName;
 
   const AppHeader({
     Key? key,
     required this.title,
     this.showNotification = true,
     this.subtitle = 'Ready for a tour ?',
-    this.userInitials = 'MJ',
+    this.userName = 'Mohamed Jahid',
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final userInitials = StringUtils.getInitials(userName);
+    
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
       color: Colors.white,
@@ -25,15 +28,21 @@ class AppHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: AppColors.primary050,
-                child: Text(
-                  userInitials,
-                  style: const TextStyle(
-                    color: AppColors.primary800,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.pink[50],
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Center(
+                  child: Text(
+                    userInitials,
+                    style: TextStyle(
+                      color: Colors.pink[700],
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -43,7 +52,7 @@ class AppHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Hello, Mohamed',
+                      'Hello, ${userName.split(' ').first}',
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,

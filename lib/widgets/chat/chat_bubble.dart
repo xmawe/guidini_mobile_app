@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/message.dart';
 import '../../constants/colors.dart';
 import '../../constants/text_styles.dart';
+import '../../utils/string_utils.dart';
 
 class ChatBubble extends StatelessWidget {
   final Message message;
@@ -11,23 +12,10 @@ class ChatBubble extends StatelessWidget {
     required this.message,
   }) : super(key: key);
 
-  // Get user initials from name
-  String _getInitials() {
-    final name = message.senderName;
-    if (name.isEmpty) return '?';
-    
-    final nameParts = name.split(' ');
-    if (nameParts.length > 1) {
-      // Get first letter of first and last name
-      return '${nameParts.first[0]}${nameParts.last[0]}'.toUpperCase();
-    } else {
-      // Just get first letter if only one name
-      return name[0].toUpperCase();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final initials = StringUtils.getInitials(message.senderName);
+    
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -35,21 +23,23 @@ class ChatBubble extends StatelessWidget {
             message.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!message.isMe) ...[
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: AppColors.gray200,
-              backgroundImage: message.senderProfilePicture != null 
-                  ? NetworkImage(message.senderProfilePicture!) 
-                  : null,
-              child: message.senderProfilePicture == null
-                  ? Text(
-                      _getInitials(),
-                      style: const TextStyle(
-                        color: AppColors.gray900,
-                        fontSize: 12,
-                      ),
-                    )
-                  : null,
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.pink[50],
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: Text(
+                  initials,
+                  style: TextStyle(
+                    color: Colors.pink[700],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(width: 8),
           ],

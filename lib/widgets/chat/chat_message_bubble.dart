@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 import '../../models/message.dart';
+import '../../utils/string_utils.dart';
 
 class ChatMessageBubble extends StatelessWidget {
   final Message message;
@@ -12,6 +13,8 @@ class ChatMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final initials = StringUtils.getInitials(message.senderName);
+    
     // Using a unique key based on message ID and read status to force rebuild when read status changes
     return Padding(
       key: ValueKey('message_${message.id}_${message.isRead}'),
@@ -19,83 +22,112 @@ class ChatMessageBubble extends StatelessWidget {
         horizontal: 16,
         vertical: 4,
       ),
-      child: Column(
-        crossAxisAlignment:
-            message.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: message.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment:
-                message.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-            children: [
-              Text(
-                message.isMe ? 'You' : message.senderName,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.gray600,
-                  fontWeight: FontWeight.w500,
-                ),
+          // Avatar only for received messages
+          if (!message.isMe) ...[
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: Colors.pink[50],
+                borderRadius: BorderRadius.circular(14),
               ),
-              const SizedBox(width: 8),
-              Text(
-                message.formattedTime,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.gray400,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.75,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            decoration: BoxDecoration(
-              color: message.isMe ? AppColors.primary800 : AppColors.gray100,
-              borderRadius: BorderRadius.only(
-                topLeft: message.isMe ? const Radius.circular(8) : Radius.zero,
-                topRight: message.isMe ? Radius.zero : const Radius.circular(8),
-                bottomLeft: const Radius.circular(8),
-                bottomRight: const Radius.circular(8),
-              ),
-            ),
-            child: Text(
-              message.content,
-              style: TextStyle(
-                color: message.isMe ? Colors.white : AppColors.gray900,
-                fontSize: 15,
-                height: 1.3,
-              ),
-            ),
-          ),
-          // Show read status for user's messages
-          if (message.isMe)
-            Padding(
-              padding: const EdgeInsets.only(top: 4, right: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    message.isRead ? Icons.done_all : Icons.done,
-                    size: 14,
-                    color: message.isRead ? AppColors.primary800 : AppColors.gray400,
+              child: Center(
+                child: Text(
+                  initials,
+                  style: TextStyle(
+                    color: Colors.pink[700],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(width: 2),
-                  Text(
-                    message.isRead ? 'Read' : '',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: message.isRead ? AppColors.primary800 : AppColors.gray400,
-                      fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Column(
+              crossAxisAlignment:
+                  message.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      message.isMe ? 'You' : message.senderName,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.gray600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      message.formattedTime,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.gray400,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.7,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: message.isMe ? AppColors.primary800 : AppColors.gray100,
+                    borderRadius: BorderRadius.only(
+                      topLeft: message.isMe ? const Radius.circular(8) : Radius.zero,
+                      topRight: message.isMe ? Radius.zero : const Radius.circular(8),
+                      bottomLeft: const Radius.circular(8),
+                      bottomRight: const Radius.circular(8),
                     ),
                   ),
-                ],
-              ),
+                  child: Text(
+                    message.content,
+                    style: TextStyle(
+                      color: message.isMe ? Colors.white : AppColors.gray900,
+                      fontSize: 15,
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+                // Show read status for user's messages
+                if (message.isMe)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, right: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          message.isRead ? Icons.done_all : Icons.done,
+                          size: 14,
+                          color: message.isRead ? AppColors.primary800 : AppColors.gray400,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          message.isRead ? 'Read' : '',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: message.isRead ? AppColors.primary800 : AppColors.gray400,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ),
+          ),
         ],
       ),
     );

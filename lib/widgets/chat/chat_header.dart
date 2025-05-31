@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
+import '../../utils/string_utils.dart';
 
 class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
   final String userName;
@@ -20,22 +21,10 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(72);
 
-  // Get user initials from name
-  String _getInitials() {
-    if (userName.isEmpty) return '?';
-    
-    final nameParts = userName.split(' ');
-    if (nameParts.length > 1) {
-      // Get first letter of first and last name
-      return '${nameParts.first[0]}${nameParts.last[0]}'.toUpperCase();
-    } else {
-      // Just get first letter if only one name
-      return userName[0].toUpperCase();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final initials = StringUtils.getInitials(userName);
+    
     return AppBar(
       backgroundColor: AppColors.background,
       elevation: 0.5,
@@ -47,59 +36,44 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
             icon: const Icon(Icons.arrow_back, color: AppColors.gray900),
             onPressed: () => Navigator.pop(context),
           ),
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: AppColors.gray050,
-            backgroundImage: profilePicture != null ? NetworkImage(profilePicture!) : null,
-            child: profilePicture == null
-                ? Stack(
-                    children: [
-                      Center(
-                        child: Text(
-                          _getInitials(),
-                          style: const TextStyle(
-                            color: AppColors.gray900,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+          Stack(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.pink[50],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Center(
+                  child: Text(
+                    initials,
+                    style: TextStyle(
+                      color: Colors.pink[700],
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              if (isOnline)
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
                       ),
-                      if (isOnline)
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: AppColors.success,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                          ),
-                        ),
-                    ],
-                  )
-                : isOnline
-                    ? Align(
-                        alignment: Alignment.bottomRight,
-                        child: Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: AppColors.success,
-                            border: Border.all(
-                              color: Colors.white,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
-                      )
-                    : null,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(width: 12),
           Expanded(

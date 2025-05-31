@@ -27,6 +27,7 @@ class AppScaffold extends StatelessWidget {
             AppHeader(
               title: title,
               showNotification: showNotification,
+              userName: 'Mohamed Jahid', // Default user name
             ),
             Expanded(child: child),
           ],
@@ -34,9 +35,8 @@ class AppScaffold extends StatelessWidget {
       ),
       bottomNavigationBar: CustomAppBar(
         currentIndex: currentIndex,
-        userName: '', // TODO: Provide the actual user name
-        subtitle: '', // TODO: Provide the actual subtitle
-        initials: '', // TODO: Provide the actual initials
+        userName: 'Mohamed Jahid', // Default user name
+        subtitle: 'Ready for a tour?', // Default subtitle
       ),
     );
   }

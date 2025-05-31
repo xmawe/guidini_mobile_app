@@ -2,6 +2,7 @@ import 'package:Guidini/models/chat_screen_arguments.dart';
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 import '../../models/chat_room.dart';
+import '../../utils/string_utils.dart';
 
 class ChatListItem extends StatelessWidget {
   final ChatRoom chat;
@@ -13,23 +14,10 @@ class ChatListItem extends StatelessWidget {
     required this.onTap,
   }) : super(key: key);
 
-  // Get user initials from name
-  String _getInitials() {
-    final name = chat.userName;
-    if (name.isEmpty) return '?';
-    
-    final nameParts = name.split(' ');
-    if (nameParts.length > 1) {
-      // Get first letter of first and last name
-      return '${nameParts.first[0]}${nameParts.last[0]}'.toUpperCase();
-    } else {
-      // Just get first letter if only one name
-      return name[0].toUpperCase();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final initials = StringUtils.getInitials(chat.userName);
+    
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -39,20 +27,23 @@ class ChatListItem extends StatelessWidget {
             // Profile Picture
             Stack(
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: chat.profilePicture != null
-                      ? AssetImage(chat.profilePicture!)
-                      : null,
-                  child: chat.profilePicture == null
-                      ? Text(
-                          _getInitials(),
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      : null,
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.pink[50],
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Center(
+                    child: Text(
+                      initials,
+                      style: TextStyle(
+                        color: Colors.pink[700],
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ),
                 if (chat.isVerified)
                   Positioned(

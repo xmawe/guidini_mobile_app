@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 import 'notification_bell.dart';
+import '../../utils/string_utils.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final int currentIndex;
   final String userName;
   final String subtitle;
-  final String initials;
 
   const CustomAppBar({
     Key? key,
     required this.currentIndex,
     required this.userName,
     required this.subtitle,
-    required this.initials,
   }) : super(key: key);
 
   @override
@@ -21,6 +20,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final initials = StringUtils.getInitials(userName);
+    
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -38,15 +39,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // User avatar with initials
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: AppColors.primary050,
-              child: Text(
-                initials,
-                style: TextStyle(
-                  color: AppColors.primary700,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: Colors.pink[50],
+                borderRadius: BorderRadius.circular(26),
+              ),
+              child: Center(
+                child: Text(
+                  initials,
+                  style: TextStyle(
+                    color: Colors.pink[700],
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ),

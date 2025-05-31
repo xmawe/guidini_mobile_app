@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 import '../../models/chat_room.dart';
+import '../../utils/string_utils.dart';
 
 class ChatListView extends StatelessWidget {
   final List<ChatRoom> chatRooms;
@@ -27,19 +28,6 @@ class ChatListView extends StatelessWidget {
     }
   }
 
-  String _getInitial(String name) {
-    if (name.isEmpty) return 'U';
-    
-    final nameParts = name.split(' ');
-    if (nameParts.length > 1) {
-      // Get first letter of first and last name
-      return '${nameParts.first[0]}${nameParts.last[0]}'.toUpperCase();
-    } else {
-      // Just get first letter if only one name
-      return name[0].toUpperCase();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
@@ -52,6 +40,8 @@ class ChatListView extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final chat = chatRooms[index];
+        final initials = StringUtils.getInitials(chat.userName);
+        
         return InkWell(
           onTap: () => onChatSelected(chat),
           child: Padding(
@@ -61,32 +51,26 @@ class ChatListView extends StatelessWidget {
                 // Avatar with online indicator
                 Stack(
                   children: [
+                    // Avatar
                     Container(
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.primary050,
+                        color: Colors.pink[50],
                         borderRadius: BorderRadius.circular(20),
-                        image: chat.profilePicture != null
-                            ? DecorationImage(
-                                image: NetworkImage(chat.profilePicture!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
                       ),
-                      child: chat.profilePicture == null
-                          ? Center(
-                              child: Text(
-                                _getInitial(chat.userName),
-                                style: const TextStyle(
-                                  color: AppColors.primary800,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            )
-                          : null,
+                      child: Center(
+                        child: Text(
+                          initials,
+                          style: TextStyle(
+                            color: Colors.pink[700],
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
+                    // Online indicator
                     if (chat.isOnline)
                       Positioned(
                         right: 0,
