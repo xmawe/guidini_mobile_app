@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/onboard_screen.dart'; // Import the OnboardScreen
+import 'screens/search_screen.dart'; 
+import 'screens/home_screen.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -11,13 +12,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Guidini Mobile App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF910000)),
         useMaterial3: true,
       ),
-      debugShowCheckedModeBanner: false, // Remove the debug badge
-      home: const OnboardScreen(), // Set OnboardScreen as the home widget
+      debugShowCheckedModeBanner: false,
+      home: const SearchScreen(),
     );
   }
 }
