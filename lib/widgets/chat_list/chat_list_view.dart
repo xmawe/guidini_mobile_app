@@ -29,7 +29,15 @@ class ChatListView extends StatelessWidget {
 
   String _getInitial(String name) {
     if (name.isEmpty) return 'U';
-    return name[0].toUpperCase();
+    
+    final nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+      // Get first letter of first and last name
+      return '${nameParts.first[0]}${nameParts.last[0]}'.toUpperCase();
+    } else {
+      // Just get first letter if only one name
+      return name[0].toUpperCase();
+    }
   }
 
   @override

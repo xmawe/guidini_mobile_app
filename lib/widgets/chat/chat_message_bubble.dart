@@ -81,16 +81,16 @@ class ChatMessageBubble extends StatelessWidget {
                 children: [
                   Icon(
                     message.isRead ? Icons.done_all : Icons.done,
-                    size: 16,
+                    size: 14,
                     color: message.isRead ? AppColors.primary800 : AppColors.gray400,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 2),
                   Text(
-                    message.isRead ? 'Read' : 'Sent',
+                    message.isRead ? 'Read' : '',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       color: message.isRead ? AppColors.primary800 : AppColors.gray400,
-                      fontWeight: message.isRead ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: FontWeight.normal,
                     ),
                   ),
                 ],

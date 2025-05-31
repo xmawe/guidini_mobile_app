@@ -68,15 +68,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     if (_isMarkingAsRead || _hasMarkedAsRead) return;
     
     try {
-      setState(() {
-        _isMarkingAsRead = true;
-      });
+      // Set internal flag but don't update UI
+      _isMarkingAsRead = true;
       
       print('Marking messages as read for room $_roomId');
       final result = await _chatService.markAsRead(_roomId);
       
       if (result['success'] == true) {
-        print('Successfully marked messages as read, updating UI');
+        print('Successfully marked messages as read, updating UI silently');
         // Update the UI to reflect that messages are read
         if (mounted) {
           setState(() {
@@ -102,17 +101,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       } else {
         print('Failed to mark messages as read: ${result['message']}');
         if (mounted) {
-          setState(() {
-            _isMarkingAsRead = false;
-          });
+          _isMarkingAsRead = false;
         }
       }
     } catch (e) {
       print('Error in _markAsRead: $e');
       if (mounted) {
-        setState(() {
-          _isMarkingAsRead = false;
-        });
+        _isMarkingAsRead = false;
       }
     }
   }
@@ -355,36 +350,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         userName: widget.chat.userName,
         userLocation: widget.chat.location ?? 'Unknown location',
         rating: widget.chat.rating ?? 4.5,
+        profilePicture: widget.chat.profilePicture,
+        isOnline: widget.chat.isOnline,
       ),
       body: Column(
         children: [
-          // Show a small loading indicator when marking messages as read
-          if (_isMarkingAsRead)
-            Container(
-              color: AppColors.primary100,
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary800),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Updating read status...',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.primary800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          // Remove the loading indicator for marking messages as read
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())

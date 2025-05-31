@@ -361,10 +361,7 @@ class ChatService {
       print('Marking messages as read for room $roomIdInt');
       
       try {
-        print('Sending mark as read API request to: /chat/rooms/$roomIdInt/read');
         final response = await _dio.post('/chat/rooms/$roomIdInt/read');
-        print('Mark as read response status: ${response.statusCode}');
-        print('Mark as read response data: ${response.data}');
         
         // Update local cache of messages
         try {
@@ -381,13 +378,11 @@ class ChatService {
             }).toList();
             
             await _cacheData('room_${roomIdInt}_messages', updatedMessages);
-            print('Updated read status in cached messages');
           }
           
           // Update the unread count in the cached chat rooms list
           final cachedRooms = await _getCachedData('chat_rooms');
           if (cachedRooms != null && cachedRooms is List) {
-            print('Updating unread count in cached chat rooms');
             int updatedRoomCount = 0;
             
             final updatedRooms = cachedRooms.map((room) {
@@ -408,9 +403,7 @@ class ChatService {
             
             if (updatedRoomCount > 0) {
               await _cacheData('chat_rooms', updatedRooms);
-              print('Updated unread count for $updatedRoomCount rooms in cache');
-            } else {
-              print('No rooms needed unread count update in cache');
+              print('Updated unread count for room $roomIdInt in cache');
             }
           }
         } catch (e) {

@@ -11,6 +11,21 @@ class ChatBubble extends StatelessWidget {
     required this.message,
   }) : super(key: key);
 
+  // Get user initials from name
+  String _getInitials() {
+    final name = message.senderName;
+    if (name.isEmpty) return '?';
+    
+    final nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+      // Get first letter of first and last name
+      return '${nameParts.first[0]}${nameParts.last[0]}'.toUpperCase();
+    } else {
+      // Just get first letter if only one name
+      return name[0].toUpperCase();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -23,13 +38,18 @@ class ChatBubble extends StatelessWidget {
             CircleAvatar(
               radius: 16,
               backgroundColor: AppColors.gray200,
-              child: Text(
-                message.senderName[0].toUpperCase(),
-                style: const TextStyle(
-                  color: AppColors.gray900,
-                  fontSize: 12,
-                ),
-              ),
+              backgroundImage: message.senderProfilePicture != null 
+                  ? NetworkImage(message.senderProfilePicture!) 
+                  : null,
+              child: message.senderProfilePicture == null
+                  ? Text(
+                      _getInitials(),
+                      style: const TextStyle(
+                        color: AppColors.gray900,
+                        fontSize: 12,
+                      ),
+                    )
+                  : null,
             ),
             const SizedBox(width: 8),
           ],
