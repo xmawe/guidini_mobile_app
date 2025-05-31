@@ -3,10 +3,12 @@ import '../../constants/colors.dart';
 
 class ChatInput extends StatefulWidget {
   final Function(String) onSendMessage;
+  final bool isSending;
 
   const ChatInput({
     Key? key,
     required this.onSendMessage,
+    this.isSending = false,
   }) : super(key: key);
 
   @override
@@ -15,6 +17,7 @@ class ChatInput extends StatefulWidget {
 
 class _ChatInputState extends State<ChatInput> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   bool _canSend = false;
 
   @override
@@ -26,6 +29,7 @@ class _ChatInputState extends State<ChatInput> {
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -39,10 +43,13 @@ class _ChatInputState extends State<ChatInput> {
   }
 
   void _handleSend() {
-    if (_canSend) {
+    if (_canSend && !widget.isSending) {
       final message = _controller.text.trim();
       widget.onSendMessage(message);
       _controller.clear();
+      
+      // Maintain focus after sending for quick follow-up messages
+      _focusNode.requestFocus();
     }
   }
 
@@ -67,14 +74,15 @@ class _ChatInputState extends State<ChatInput> {
                 ),
                 child: TextField(
                   controller: _controller,
-                  decoration: const InputDecoration(
-                    hintText: 'Message',
-                    hintStyle: TextStyle(
+                  focusNode: _focusNode,
+                  decoration: InputDecoration(
+                    hintText: 'Type a message...',
+                    hintStyle: const TextStyle(
                       color: AppColors.gray400,
                       fontSize: 16,
                     ),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 12,
                     ),
@@ -86,6 +94,12 @@ class _ChatInputState extends State<ChatInput> {
                   maxLines: 4,
                   minLines: 1,
                   textCapitalization: TextCapitalization.sentences,
+                  onSubmitted: (text) {
+                    if (_canSend && !widget.isSending) {
+                      _handleSend();
+                    }
+                  },
+                  textInputAction: TextInputAction.send,
                 ),
               ),
             ),
@@ -100,12 +114,23 @@ class _ChatInputState extends State<ChatInput> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: _canSend ? _handleSend : null,
-                  child: Icon(
-                    Icons.send,
-                    color: _canSend ? Colors.white : Colors.white54,
-                    size: 24,
+                  borderRadius: BorderRadius.circular(24),
+                  onTap: _canSend && !widget.isSending ? _handleSend : null,
+                  child: Center(
+                    child: widget.isSending
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.send,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                   ),
                 ),
               ),

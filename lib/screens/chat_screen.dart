@@ -9,6 +9,7 @@ import '../widgets/chat/chat_header.dart';
 import '../widgets/chat/day_separator.dart';
 import '../services/chat_service.dart';
 import '../services/service_provider.dart';
+import '../utils/message_utils.dart';
 
 class ChatScreen extends StatefulWidget {
   final ChatRoom chat;
@@ -33,6 +34,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   int? _beforeId;
   bool _isMarkingAsRead = false;
   bool _hasMarkedAsRead = false;
+  bool _isSendingMessage = false;
+  
+  // Store messages with sending errors for retry
+  final Map<String, String> _failedMessages = {};
 
   // Parse room ID safely
   int get _roomId {
@@ -71,11 +76,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       // Set internal flag but don't update UI
       _isMarkingAsRead = true;
       
-      print('Marking messages as read for room $_roomId');
       final result = await _chatService.markAsRead(_roomId);
       
       if (result['success'] == true) {
-        print('Successfully marked messages as read, updating UI silently');
         // Update the UI to reflect that messages are read
         if (mounted) {
           setState(() {
@@ -93,19 +96,16 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               }
             }
             
-            print('Updated $updatedCount messages in UI');
             _isMarkingAsRead = false;
             _hasMarkedAsRead = true;
           });
         }
       } else {
-        print('Failed to mark messages as read: ${result['message']}');
         if (mounted) {
           _isMarkingAsRead = false;
         }
       }
     } catch (e) {
-      print('Error in _markAsRead: $e');
       if (mounted) {
         _isMarkingAsRead = false;
       }
@@ -149,7 +149,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               newMessages.add(Message.fromJson(msg));
             } catch (e) {
               print('Error parsing message: $e');
-              print('Message data: $msg');
             }
           }
           
@@ -202,7 +201,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       
       setState(() {
         _hasError = true;
-        _errorMessage = e.toString();
+        _errorMessage = MessageUtils.getUserFriendlyErrorMessage(e);
         if (loadMore) {
           _isLoadingMore = false;
         } else {
@@ -213,12 +212,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   void _handleSendMessage(String content) async {
-    if (content.trim().isEmpty) return;
+    if (content.trim().isEmpty || _isSendingMessage) return;
 
+    // Generate a unique ID for the temporary message
+    final tempId = DateTime.now().millisecondsSinceEpoch.toString();
+    
     // Create a temporary message for optimistic UI update
     final tempMessage = Message(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      chatRoomId: widget.chat.id,
+      id: tempId,
+      chatRoomId: widget.chat.id.toString(),
       senderId: 'current_user_id', // This will make isMe return true
       content: content,
       createdAt: DateTime.now(),
@@ -231,6 +233,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     setState(() {
       // Add new message at the end (newest at the bottom)
       _messages.add(tempMessage);
+      _isSendingMessage = true;
     });
 
     try {
@@ -246,10 +249,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         // Replace the temporary message with the real one
         final realMessage = Message.fromJson(result['data']);
         setState(() {
-          final index = _messages.indexWhere((msg) => msg.id == tempMessage.id);
+          final index = _messages.indexWhere((msg) => msg.id == tempId);
           if (index != -1) {
             _messages[index] = realMessage;
           }
+          _isSendingMessage = false;
+          
+          // Remove from failed messages if it was there
+          _failedMessages.remove(tempId);
         });
         
         // Mark messages as read after sending a message
@@ -257,32 +264,63 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       } else {
         // Show error state for the message
         setState(() {
-          final index = _messages.indexWhere((msg) => msg.id == tempMessage.id);
+          final index = _messages.indexWhere((msg) => msg.id == tempId);
           if (index != -1) {
-            // We could mark the message with an error state here
-            // For now, we'll just remove it
-            _messages.removeAt(index);
+            // Mark message as failed but keep it in the UI
+            _failedMessages[tempId] = content;
           }
+          _isSendingMessage = false;
         });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to send message: ${result['message']}')),
-          );
-        }
+        
+        MessageUtils.showErrorSnackBar(
+          context, 
+          'Failed to send message. Tap to retry.',
+          onRetry: () => _retryAllFailedMessages(),
+        );
       }
     } catch (e) {
       // Check if widget is still mounted before calling setState
       if (!mounted) return;
       
       setState(() {
-        final index = _messages.indexWhere((msg) => msg.id == tempMessage.id);
+        final index = _messages.indexWhere((msg) => msg.id == tempId);
         if (index != -1) {
-          _messages.removeAt(index);
+          // Mark message as failed but keep it in the UI
+          _failedMessages[tempId] = content;
         }
+        _isSendingMessage = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error sending message: $e')),
+      
+      MessageUtils.showErrorSnackBar(
+        context, 
+        MessageUtils.getUserFriendlyErrorMessage(e),
+        onRetry: () => _retryAllFailedMessages(),
       );
+    }
+  }
+  
+  void _retrySendMessage(String messageId) {
+    if (!_failedMessages.containsKey(messageId)) return;
+    
+    final content = _failedMessages[messageId]!;
+    
+    // Remove the failed message
+    setState(() {
+      _messages.removeWhere((msg) => msg.id == messageId);
+      _failedMessages.remove(messageId);
+    });
+    
+    // Try sending it again
+    _handleSendMessage(content);
+  }
+  
+  void _retryAllFailedMessages() {
+    if (_failedMessages.isEmpty) return;
+    
+    // Create a copy to avoid concurrent modification
+    final messagesToRetry = Map<String, String>.from(_failedMessages);
+    for (final entry in messagesToRetry.entries) {
+      _retrySendMessage(entry.key);
     }
   }
 
@@ -311,6 +349,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     for (int i = 0; i < _messages.length; i++) {
       final message = _messages[i];
       final messageDate = message.formattedDate;
+      
+      // Check if this is a failed message
+      final bool isFailed = _failedMessages.containsKey(message.id);
 
       // Add date separator if date changes
       if (messageDate != currentDate) {
@@ -318,7 +359,35 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         currentDate = messageDate;
       }
 
-      messageWidgets.add(ChatMessageBubble(message: message));
+      // Create message bubble with tap handler for failed messages
+      final messageBubble = isFailed
+          ? GestureDetector(
+              onTap: () => _retrySendMessage(message.id),
+              child: Stack(
+                children: [
+                  ChatMessageBubble(message: message),
+                  Positioned(
+                    right: 8,
+                    bottom: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: AppColors.error,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.refresh,
+                        color: Colors.white,
+                        size: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : ChatMessageBubble(message: message);
+      
+      messageWidgets.add(messageBubble);
     }
 
     // Add load more button at the top if there are more messages
@@ -417,7 +486,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         ),
                       ),
           ),
-          ChatInput(onSendMessage: _handleSendMessage),
+          ChatInput(
+            onSendMessage: _handleSendMessage,
+            isSending: _isSendingMessage,
+          ),
         ],
       ),
     );
