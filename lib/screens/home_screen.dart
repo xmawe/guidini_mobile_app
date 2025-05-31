@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:geolocator/geolocator.dart';
 import '../utils/colors.dart' as AppColorUtils;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -24,8 +25,9 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Tour> tours = [];
   List<Tour> topGuides = [];
   bool isLoading = true;
-  String currentLocation = 'Marrakesh';
+  String currentLocation = 'Select Location';
   List<City> cities = [];
+  bool _hasShownLocationDialog = false;
 
   @override
   void initState() {
@@ -35,12 +37,240 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     fetchCities();
     fetchTours();
+    
+    // Show location permission dialog after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_hasShownLocationDialog) {
+        _showLocationPermissionDialog();
+        _hasShownLocationDialog = true;
+      }
+    });
+  }
+
+  Future<void> _showLocationPermissionDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColorUtils.AppColors.primary100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.location_on,
+                    size: 40,
+                    color: AppColorUtils.AppColors.primaryRed,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Enable Location Services',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'InstrumentSans',
+                    color: AppColorUtils.AppColors.gray950,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Allow us to access your location to show nearby tours and personalized recommendations.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'InstrumentSans',
+                    color: AppColorUtils.AppColors.grayText,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: AppColorUtils.AppColors.gray300,
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          'Not Now',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'InstrumentSans',
+                            color: AppColorUtils.AppColors.gray700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _requestLocationPermission();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColorUtils.AppColors.primaryRed,
+                          padding: EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Allow',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'InstrumentSans',
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _requestLocationPermission() async {
+    try {
+      // Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showLocationServiceDialog();
+        return;
+      }
+
+      // Check permissions
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        _showPermissionDeniedDialog();
+        return;
+      }
+
+      // Get current position
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Update user location on backend
+      await _updateUserLocation(position.latitude, position.longitude);
+
+    } catch (e) {
+      print('Error getting location: $e');
+    }
+  }
+
+  Future<void> _updateUserLocation(double latitude, double longitude) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/api/tours/update-location'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer YOUR_AUTH_TOKEN', // Add your auth token
+        },
+        body: json.encode({
+          'latitude': latitude,
+          'longitude': longitude,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          currentLocation = data['location'];
+        });
+        fetchTours(); // Refresh tours with new location
+      }
+    } catch (e) {
+      print('Error updating location: $e');
+    }
+  }
+
+  void _showLocationServiceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Location Services Disabled'),
+        content: Text('Please enable location services to use this feature.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Location Permission Required'),
+        content: Text('Please grant location permission in your device settings to use this feature.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Geolocator.openAppSettings();
+            },
+            child: Text('Settings'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> fetchTours() async {
     setState(() => isLoading = true);
     try {
-      final response = await http.get(Uri.parse('http://127.0.0.1:8000/api/tours?location=$currentLocation'));
+      String locationParam = currentLocation == 'Select Location' ? '' : currentLocation;
+      final response = await http.get(Uri.parse('http://127.0.0.1:8000/api/tours?location=$locationParam'));
       print('Status: ${response.statusCode}');
       print('Body: ${response.body}');
       if (response.statusCode == 200) {
@@ -266,10 +496,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Row(
                               children: [
                                 Text(
-                                  '$currentLocation, Morocco',
+                                  currentLocation == 'Select Location' 
+                                    ? currentLocation 
+                                    : '$currentLocation, Morocco',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Colors.black,
+                                    color: currentLocation == 'Select Location' 
+                                      ? AppColorUtils.AppColors.grayText 
+                                      : Colors.black,
                                     fontFamily: 'InstrumentSans',
                                     fontWeight: FontWeight.bold,
                                   ),
