@@ -27,6 +27,11 @@ class ChatListView extends StatelessWidget {
     }
   }
 
+  String _getInitial(String name) {
+    if (name.isEmpty) return 'U';
+    return name[0].toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
@@ -45,24 +50,50 @@ class ChatListView extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                // Avatar
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary050,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Center(
-                    child: Text(
-                      chat.userName[0].toUpperCase(),
-                      style: const TextStyle(
-                        color: AppColors.primary800,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                // Avatar with online indicator
+                Stack(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary050,
+                        borderRadius: BorderRadius.circular(20),
+                        image: chat.profilePicture != null
+                            ? DecorationImage(
+                                image: NetworkImage(chat.profilePicture!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
                       ),
+                      child: chat.profilePicture == null
+                          ? Center(
+                              child: Text(
+                                _getInitial(chat.userName),
+                                style: const TextStyle(
+                                  color: AppColors.primary800,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            )
+                          : null,
                     ),
-                  ),
+                    if (chat.isOnline)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            border: Border.all(color: Colors.white, width: 2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(width: 12),
                 // Chat info
@@ -72,12 +103,15 @@ class ChatListView extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            chat.userName,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.gray900,
+                          Expanded(
+                            child: Text(
+                              chat.userName,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.gray900,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (chat.isVerified) ...[
@@ -101,14 +135,30 @@ class ChatListView extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        chat.lastMessage,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.gray500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          if (chat.isLastMessageFromMe)
+                            const Padding(
+                              padding: EdgeInsets.only(right: 4),
+                              child: Icon(
+                                Icons.reply,
+                                size: 12,
+                                color: AppColors.gray500,
+                              ),
+                            ),
+                          Expanded(
+                            child: Text(
+                              chat.lastMessage,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: chat.unreadCount > 0 ? FontWeight.w500 : FontWeight.normal,
+                                color: chat.unreadCount > 0 ? AppColors.gray900 : AppColors.gray500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -120,9 +170,10 @@ class ChatListView extends StatelessWidget {
                   children: [
                     Text(
                       _formatTimestamp(chat.lastActivity),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.gray500,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: chat.unreadCount > 0 ? FontWeight.w500 : FontWeight.normal,
+                        color: chat.unreadCount > 0 ? AppColors.primary800 : AppColors.gray500,
                       ),
                     ),
                     if (chat.unreadCount > 0) ...[
@@ -153,7 +204,6 @@ class ChatListView extends StatelessWidget {
     );
   }
 }
-
 // Mock data
 final mockChatRooms = [
   ChatRoom(

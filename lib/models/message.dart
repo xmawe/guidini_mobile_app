@@ -26,18 +26,58 @@ class Message {
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
+    // Extract sender information from nested 'sender' object if it exists
+    Map<String, dynamic>? senderData;
+    String senderId = '';
+    String senderName = 'Unknown';
+    String? senderProfilePicture;
+    
+    if (json.containsKey('sender') && json['sender'] is Map<String, dynamic>) {
+      senderData = json['sender'] as Map<String, dynamic>;
+      senderId = senderData['id']?.toString() ?? '';
+      senderName = senderData['name']?.toString() ?? 'Unknown';
+      senderProfilePicture = senderData['profile_picture']?.toString();
+    } else {
+      // Fallback to old format
+      senderId = json['sender_id']?.toString() ?? '';
+      senderName = json['sender_name']?.toString() ?? 'Unknown';
+      senderProfilePicture = json['sender_profile_picture']?.toString();
+    }
+
+    // Determine if the message is from the current user
+    bool isFromMe = false;
+    if (json.containsKey('is_from_me')) {
+      isFromMe = json['is_from_me'] == true;
+    }
+
     return Message(
-      id: json['id'] as String,
-      chatRoomId: json['chat_room_id'] as String,
-      senderId: json['sender_id'] as String,
-      content: json['content'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      readAt: json['read_at'] != null ? DateTime.parse(json['read_at'] as String) : null,
-      isRead: json['is_read'] as bool? ?? false,
-      senderName: json['sender_name'] as String,
-      senderProfilePicture: json['sender_profile_picture'] as String?,
-      isGuide: json['is_guide'] as bool? ?? false,
+      id: json['id'].toString(),
+      chatRoomId: json['chat_room_id']?.toString() ?? '0',
+      senderId: isFromMe ? 'current_user_id' : senderId,
+      content: json['content']?.toString() ?? '',
+      createdAt: _parseDateTime(json['created_at']),
+      readAt: json['read_at'] != null ? _parseDateTime(json['read_at']) : null,
+      isRead: json['is_read'] == true,
+      senderName: senderName,
+      senderProfilePicture: senderProfilePicture,
+      isGuide: json['is_guide'] == true,
     );
+  }
+
+  // Helper method to parse DateTime from various formats
+  static DateTime _parseDateTime(dynamic dateTime) {
+    if (dateTime == null) return DateTime.now();
+    
+    if (dateTime is String) {
+      return DateTime.parse(dateTime);
+    } else if (dateTime is int) {
+      // Assume timestamp in seconds or milliseconds
+      return dateTime > 100000000000 
+          ? DateTime.fromMillisecondsSinceEpoch(dateTime) 
+          : DateTime.fromMillisecondsSinceEpoch(dateTime * 1000);
+    }
+    
+    return DateTime.now();
   }
 
   Map<String, dynamic> toJson() {
@@ -107,6 +147,33 @@ class Message {
 
   // Check if message is from current user (to be implemented with actual auth)
   bool get isMe => senderId == 'current_user_id'; // Replace with actual user ID check
+  
+  // Create a copy of this message with some fields changed
+  Message copyWith({
+    String? id,
+    String? chatRoomId,
+    String? senderId,
+    String? content,
+    DateTime? createdAt,
+    DateTime? readAt,
+    bool? isRead,
+    String? senderName,
+    String? senderProfilePicture,
+    bool? isGuide,
+  }) {
+    return Message(
+      id: id ?? this.id,
+      chatRoomId: chatRoomId ?? this.chatRoomId,
+      senderId: senderId ?? this.senderId,
+      content: content ?? this.content,
+      createdAt: createdAt ?? this.createdAt,
+      readAt: readAt ?? this.readAt,
+      isRead: isRead ?? this.isRead,
+      senderName: senderName ?? this.senderName,
+      senderProfilePicture: senderProfilePicture ?? this.senderProfilePicture,
+      isGuide: isGuide ?? this.isGuide,
+    );
+  }
 }
 
 // Sample data for testing

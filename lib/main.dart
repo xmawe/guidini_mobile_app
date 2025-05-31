@@ -3,6 +3,8 @@ import 'constants/colors.dart';
 import 'models/chat_room.dart';
 import 'screens/chat_list_screen.dart';
 import 'screens/chat_screen.dart';
+import 'screens/token_setup_screen.dart';
+import 'screens/api_tester_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,9 +39,13 @@ class MyApp extends StatelessWidget {
           surface: Colors.white,
         ),
       ),
-      initialRoute: '/',
+      initialRoute: '/token_setup',
       onGenerateRoute: (settings) {
         if (settings.name == '/') {
+          return MaterialPageRoute(
+            builder: (context) => const ChatListScreen(),
+          );
+        } else if (settings.name == '/chat_list') {
           return MaterialPageRoute(
             builder: (context) => const ChatListScreen(),
           );
@@ -47,6 +53,14 @@ class MyApp extends StatelessWidget {
           final chat = settings.arguments as ChatRoom;
           return MaterialPageRoute(
             builder: (context) => ChatScreen(chat: chat),
+          );
+        } else if (settings.name == '/token_setup') {
+          return MaterialPageRoute(
+            builder: (context) => const TokenSetupScreen(),
+          );
+        } else if (settings.name == '/api_tester') {
+          return MaterialPageRoute(
+            builder: (context) => const ApiTesterScreen(),
           );
         }
         return null;

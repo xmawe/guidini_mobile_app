@@ -3,6 +3,9 @@ import '../constants/colors.dart';
 import '../widgets/common/bottom_nav_bar.dart';
 import '../widgets/chat_list/chat_list_view.dart';
 import '../models/chat_room.dart';
+import '../services/chat_service.dart';
+import '../services/service_provider.dart';
+import '../services/token_service.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({Key? key}) : super(key: key);
@@ -13,11 +16,120 @@ class ChatListScreen extends StatefulWidget {
 
 class _ChatListScreenState extends State<ChatListScreen> {
   int _currentIndex = 3; // Conversations tab
+  final ChatService _chatService = ServiceProvider().getChatService();
+  List<ChatRoom> _chatRooms = [];
+  bool _isLoading = true;
+  bool _hasError = false;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChatRooms();
+  }
+
+  Future<void> _loadChatRooms() async {
+    try {
+      final token = await TokenService.getToken();
+      if (token == null) {
+        print('No token found, navigating to token setup screen');
+        // If no token is set, navigate to token setup screen
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.pushReplacementNamed(context, '/token_setup');
+        });
+        return;
+      }
+
+      print('Token found, loading chat rooms');
+      setState(() {
+        _isLoading = true;
+        _hasError = false;
+      });
+
+      final result = await _chatService.getChatRooms();
+      print('Chat rooms API result structure: ${result.keys.toList()}');
+      
+      if (result['success'] == true) {
+        final data = result['data'];
+        print('Chat rooms data type: ${data.runtimeType}');
+        
+        final List<ChatRoom> rooms = [];
+        
+        // Process data based on its type
+        if (data is List) {
+          print('Processing list data with ${data.length} items');
+          for (var room in data) {
+            try {
+              final chatRoom = ChatRoom.fromJson(room);
+              rooms.add(chatRoom);
+              
+              // Print unread count for debugging
+              print('Chat room ${chatRoom.idAsInt} unread count: ${chatRoom.unreadCount}');
+            } catch (e) {
+              print('Error parsing chat room: $e');
+              print('Room data: $room');
+            }
+          }
+        } else if (data is Map) {
+          print('Data is a Map with keys: ${data.keys.toList()}');
+          // Try to find a list in the map
+          for (var key in data.keys) {
+            final value = data[key];
+            if (value is List) {
+              print('Found list in key "$key" with ${value.length} items');
+              for (var room in value) {
+                try {
+                  final chatRoom = ChatRoom.fromJson(room);
+                  rooms.add(chatRoom);
+                  
+                  // Print unread count for debugging
+                  print('Chat room ${chatRoom.idAsInt} unread count: ${chatRoom.unreadCount}');
+                } catch (e) {
+                  print('Error parsing chat room from key "$key": $e');
+                  print('Room data: $room');
+                }
+              }
+              break;
+            }
+          }
+        }
+        
+        print('Parsed ${rooms.length} chat rooms');
+        setState(() {
+          _chatRooms = rooms;
+          _isLoading = false;
+        });
+      } else {
+        print('API returned error: ${result['message']}');
+        setState(() {
+          _hasError = true;
+          _errorMessage = result['message'] ?? 'Failed to load chat rooms';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Exception in _loadChatRooms: $e');
+      setState(() {
+        _hasError = true;
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   void _onNavTap(int index) {
     setState(() {
       _currentIndex = index;
     });
+  }
+
+  void _clearCacheAndReload() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    await _chatService.clearChatCache();
+    _loadChatRooms();
   }
 
   @override
@@ -77,13 +189,18 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.notifications_outlined),
-                        onPressed: () {},
+                        icon: const Icon(Icons.settings),
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/token_setup');
+                        },
                         color: AppColors.gray900,
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                   const Text(
                     'Chats',
                     style: TextStyle(
@@ -91,6 +208,22 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       fontWeight: FontWeight.w600,
                       color: AppColors.gray900,
                     ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.refresh),
+                            onPressed: _loadChatRooms,
+                            tooltip: 'Refresh',
+                            color: AppColors.gray900,
+                            iconSize: 20,
+                            padding: EdgeInsets.all(4),
+                            constraints: BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   // Search Bar
@@ -133,16 +266,108 @@ class _ChatListScreenState extends State<ChatListScreen> {
             ),
             // Chat List
             Expanded(
-              child: ChatListView(
-                chatRooms: mockChatRooms,
-                onChatSelected: (chat) {
-                  Navigator.pushNamed(
-                    context,
-                    '/chat',
-                    arguments: chat,
-                  );
-                },
-              ),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _hasError
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  size: 48,
+                                  color: AppColors.error,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Error loading chats',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _errorMessage,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: AppColors.gray600,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: _loadChatRooms,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary800,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      child: const Text('Try Again'),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    ElevatedButton(
+                                      onPressed: _clearCacheAndReload,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.gray600,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      child: const Text('Clear Cache & Reload'),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )
+                        : _chatRooms.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.chat_bubble_outline,
+                                      size: 48,
+                                      color: AppColors.gray400,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'No chats yet',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text(
+                                      'Your conversations will appear here',
+                                      style: TextStyle(
+                                        color: AppColors.gray600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : RefreshIndicator(
+                                onRefresh: () async {
+                                  await _loadChatRooms();
+                                },
+                                color: AppColors.primary800,
+                                child: ChatListView(
+                                  chatRooms: _chatRooms,
+                                  onChatSelected: (chat) {
+                                    print('Navigating to chat room ${chat.idAsInt}');
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/chat',
+                                      arguments: chat,
+                                    ).then((_) {
+                                      print('Returned from chat room ${chat.idAsInt}, refreshing chat list');
+                                      _loadChatRooms();
+                                    });
+                                  },
+                                ),
+                              ),
             ),
           ],
         ),
@@ -154,62 +379,3 @@ class _ChatListScreenState extends State<ChatListScreen> {
     );
   }
 }
-
-// Mock data
-final List<ChatRoom> mockChatRooms = [
-  ChatRoom(
-    id: '1',
-    userId: 'guide_1',
-    userName: 'Ahmed El Yassifi',
-    lastMessage: "Thanks for reaching out. I'll get back to you as soon as I can...",
-    lastActivity: DateTime.now().subtract(const Duration(minutes: 2)),
-    status: ChatRoomStatus.active,
-    unreadCount: 1,
-    isVerified: true,
-    location: 'Marrakech, Morocco',
-  ),
-  ChatRoom(
-    id: '2',
-    userId: 'guide_2',
-    userName: 'Mohamed Ibrahimi',
-    lastMessage: "Okay!",
-    lastActivity: DateTime.now().subtract(const Duration(hours: 1)),
-    status: ChatRoomStatus.active,
-    unreadCount: 2,
-    isVerified: true,
-    location: 'Fes, Morocco',
-  ),
-  ChatRoom(
-    id: '3',
-    userId: 'guide_3',
-    userName: 'Ayoub Moussaoui',
-    lastMessage: "Thanks for reaching out.",
-    lastActivity: DateTime.now().subtract(const Duration(days: 1)),
-    status: ChatRoomStatus.active,
-    unreadCount: 0,
-    isVerified: false,
-    location: 'Chefchaouen, Morocco',
-  ),
-  ChatRoom(
-    id: '4',
-    userId: 'guide_4',
-    userName: 'Hafid Elmoudden',
-    lastMessage: "Thanks for reaching out.",
-    lastActivity: DateTime.now().subtract(const Duration(days: 1)),
-    status: ChatRoomStatus.active,
-    unreadCount: 0,
-    isVerified: false,
-    location: 'Tangier, Morocco',
-  ),
-  ChatRoom(
-    id: '5',
-    userId: 'guide_5',
-    userName: 'Mohamed Jada',
-    lastMessage: "Thanks for reaching out.",
-    lastActivity: DateTime.now().subtract(const Duration(days: 7)),
-    status: ChatRoomStatus.inactive,
-    unreadCount: 0,
-    isVerified: true,
-    location: 'Casablanca, Morocco',
-  ),
-];

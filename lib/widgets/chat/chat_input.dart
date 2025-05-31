@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 
 class ChatInput extends StatefulWidget {
-  const ChatInput({Key? key}) : super(key: key);
+  final Function(String) onSendMessage;
+
+  const ChatInput({
+    Key? key,
+    required this.onSendMessage,
+  }) : super(key: key);
 
   @override
   State<ChatInput> createState() => _ChatInputState();
@@ -35,7 +40,8 @@ class _ChatInputState extends State<ChatInput> {
 
   void _handleSend() {
     if (_canSend) {
-      // TODO: Implement sending message
+      final message = _controller.text.trim();
+      widget.onSendMessage(message);
       _controller.clear();
     }
   }

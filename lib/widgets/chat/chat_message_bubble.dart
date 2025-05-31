@@ -12,7 +12,9 @@ class ChatMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Using a unique key based on message ID and read status to force rebuild when read status changes
     return Padding(
+      key: ValueKey('message_${message.id}_${message.isRead}'),
       padding: const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 4,
@@ -70,6 +72,30 @@ class ChatMessageBubble extends StatelessWidget {
               ),
             ),
           ),
+          // Show read status for user's messages
+          if (message.isMe)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, right: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    message.isRead ? Icons.done_all : Icons.done,
+                    size: 16,
+                    color: message.isRead ? AppColors.primary800 : AppColors.gray400,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    message.isRead ? 'Read' : 'Sent',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: message.isRead ? AppColors.primary800 : AppColors.gray400,
+                      fontWeight: message.isRead ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
