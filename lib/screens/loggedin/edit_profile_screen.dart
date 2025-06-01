@@ -3,7 +3,7 @@ import 'package:guidini/models/city.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../constants/colors.dart';
-import 'package:guidini/widgets/custom_input_field.dart.dart';
+import 'package:guidini/widgets/custom_input_field.dart';
 import 'package:guidini/services/auth_service.dart';
 
 class EditProfileScreen extends StatefulWidget {

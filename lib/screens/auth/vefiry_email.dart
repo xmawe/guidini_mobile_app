@@ -1,4 +1,4 @@
-import 'package:guidini/widgets/custom_input_field.dart.dart';
+import 'package:guidini/widgets/custom_input_field.dart';
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 

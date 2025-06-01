@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
-import 'package:guidini/widgets/custom_input_field.dart.dart';
+import 'package:guidini/widgets/custom_input_field.dart';
 import 'package:guidini/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
