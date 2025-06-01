@@ -73,7 +73,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
       final token = prefs.getString('token');
 
       final response = await http.get(
-        Uri.parse('http://192.168.200.8:8000/api/tours'),
+        Uri.parse('http://127.0.0.1:8000/api/tours'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -155,7 +155,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.200.8:8000/api/tours'),
+        Uri.parse('http://127.0.0.1:8000/api/tours'),
       );
 
       request.headers.addAll({

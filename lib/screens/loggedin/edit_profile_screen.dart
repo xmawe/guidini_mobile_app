@@ -100,7 +100,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.200.8:8000/api/cities'),
+        Uri.parse('http://127.0.0.1:8000/api/cities'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -171,7 +171,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://192.168.200.8:8000/api/user/edit/personal'),
+        Uri.parse('http://127.0.0.1:8000/api/user/edit/personal'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

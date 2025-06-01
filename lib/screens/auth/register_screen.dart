@@ -54,7 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.200.8:8000/api/cities'),
+        Uri.parse('http://127.0.0.1:8000/api/cities'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
