@@ -5,6 +5,9 @@ import 'screens/chat_list_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/token_setup_screen.dart';
 import 'screens/api_tester_screen.dart';
+import 'screens/guide_profile_screen.dart';
+import 'screens/tour_card_example_screen.dart';
+import 'screens/simple_tour_card_example.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,7 +42,7 @@ class MyApp extends StatelessWidget {
           surface: Colors.white,
         ),
       ),
-      initialRoute: '/token_setup',
+      initialRoute: '/simple_tour_card',
       onGenerateRoute: (settings) {
         if (settings.name == '/') {
           return MaterialPageRoute(
@@ -50,10 +53,24 @@ class MyApp extends StatelessWidget {
             builder: (context) => const ChatListScreen(),
           );
         } else if (settings.name == '/chat') {
+          // Handle both ChatRoom objects and Map arguments
+          if (settings.arguments is ChatRoom) {
           final chat = settings.arguments as ChatRoom;
           return MaterialPageRoute(
             builder: (context) => ChatScreen(chat: chat),
-          );
+            );
+          } else if (settings.arguments is Map) {
+            // We'll handle this case when implementing the chat from guide profile
+            // This is just a placeholder for now
+            final args = settings.arguments as Map;
+            return MaterialPageRoute(
+              builder: (context) => const ChatListScreen(),
+            );
+          } else {
+            return MaterialPageRoute(
+              builder: (context) => const ChatListScreen(),
+            );
+          }
         } else if (settings.name == '/token_setup') {
           return MaterialPageRoute(
             builder: (context) => const TokenSetupScreen(),
@@ -61,6 +78,19 @@ class MyApp extends StatelessWidget {
         } else if (settings.name == '/api_tester') {
           return MaterialPageRoute(
             builder: (context) => const ApiTesterScreen(),
+          );
+        } else if (settings.name == '/guide_profile') {
+          final guideId = settings.arguments as int;
+          return MaterialPageRoute(
+            builder: (context) => GuideProfileScreen(guideId: guideId),
+          );
+        } else if (settings.name == '/tour_card_example') {
+          return MaterialPageRoute(
+            builder: (context) => const TourCardExampleScreen(),
+          );
+        } else if (settings.name == '/simple_tour_card') {
+          return MaterialPageRoute(
+            builder: (context) => const SimpleTourCardExample(),
           );
         }
         return null;

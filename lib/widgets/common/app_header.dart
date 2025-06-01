@@ -36,12 +36,12 @@ class AppHeader extends StatelessWidget {
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Center(
-                  child: Text(
-                    userInitials,
+                child: Text(
+                  userInitials,
                     style: TextStyle(
                       color: Colors.pink[700],
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -75,6 +75,17 @@ class AppHeader extends StatelessWidget {
                   notificationCount: 1,
                   onTap: () {
                     // Handle notification tap
+                  },
+                ),
+              // Test guide profile button
+              IconButton(
+                icon: const Icon(Icons.person, color: Colors.deepOrange),
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/guide_profile',
+                    arguments: 1, // Guide ID
+                  );
                   },
                 ),
             ],

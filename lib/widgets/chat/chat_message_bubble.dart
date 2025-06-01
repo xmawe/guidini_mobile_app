@@ -25,56 +25,56 @@ class ChatMessageBubble extends StatelessWidget {
         mainAxisAlignment: message.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Flexible(
-            child: Column(
-              crossAxisAlignment:
-                  message.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-              children: [
-                Row(
+      child: Column(
+        crossAxisAlignment:
+            message.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      message.isMe ? 'You' : message.senderName,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.gray600,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      message.formattedTime,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.gray400,
-                      ),
-                    ),
-                  ],
+            children: [
+              Text(
+                message.isMe ? 'You' : message.senderName,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.gray600,
+                  fontWeight: FontWeight.w500,
                 ),
-                const SizedBox(height: 4),
-                Container(
-                  constraints: BoxConstraints(
+              ),
+              const SizedBox(width: 8),
+              Text(
+                message.formattedTime,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.gray400,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Container(
+            constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 0.7,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: message.isMe ? AppColors.primary800 : AppColors.gray100,
-                    borderRadius: BorderRadius.only(
-                      topLeft: message.isMe ? const Radius.circular(8) : Radius.zero,
-                      topRight: message.isMe ? Radius.zero : const Radius.circular(8),
-                      bottomLeft: const Radius.circular(8),
-                      bottomRight: const Radius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    message.content,
-                    style: TextStyle(
-                      color: message.isMe ? Colors.white : AppColors.gray900,
-                      fontSize: 15,
-                      height: 1.3,
-                    ),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              color: message.isMe ? AppColors.primary800 : AppColors.gray100,
+              borderRadius: BorderRadius.only(
+                topLeft: message.isMe ? const Radius.circular(8) : Radius.zero,
+                topRight: message.isMe ? Radius.zero : const Radius.circular(8),
+                bottomLeft: const Radius.circular(8),
+                bottomRight: const Radius.circular(8),
+              ),
+            ),
+            child: Text(
+              message.content,
+              style: TextStyle(
+                color: message.isMe ? Colors.white : AppColors.gray900,
+                fontSize: 15,
+                height: 1.3,
+              ),
                   ),
                 ),
                 // Show read status for user's messages

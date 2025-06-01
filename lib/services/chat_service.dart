@@ -153,7 +153,7 @@ class ChatService {
           'fromCache': true,
         };
       }
-      
+
       return {
         'success': false,
         'message': _handleError(e).toString(),

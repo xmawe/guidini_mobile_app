@@ -14,6 +14,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   dio: ^5.8.0+1
   shared_preferences: ^2.5.3
+  flutter_svg: ^2.0.9  # Use the latest version
 
 dev_dependencies:
   flutter_test:
@@ -29,4 +30,4 @@ flutter:
         - asset: lib/assets/fonts/InstrumentSans-Bold.ttf
           weight: 700
   assets:
-    - lib/assets/images/nav_icons/
+    - assets/icons/chat_bubble.svg

@@ -301,40 +301,40 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     _searchConversations(value);
                   }
                 },
-              ),
-            ),
+                        ),
+                      ),
             
             // Chat List
-            Expanded(
+                      Expanded(
                 child: _isSearching 
                     ? _isSearchLoading
                         ? const Center(child: CircularProgressIndicator())
                         : _hasSearchError
                             ? Center(
-                                child: Column(
+                        child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
+                          children: [
                                     const Icon(
                                       Icons.error_outline,
                                       size: 48,
                                       color: AppColors.error,
                                     ),
                                     const SizedBox(height: 16),
-                                    const Text(
+                            const Text(
                                       'Error searching',
-                                      style: TextStyle(
+                              style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                              ),
+                            ),
                                     const SizedBox(height: 8),
                                     Text(
                                       _searchErrorMessage,
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         color: AppColors.gray600,
-                                      ),
-                                    ),
+                              ),
+                            ),
                                     const SizedBox(height: 16),
                                     ElevatedButton(
                                       onPressed: () {
@@ -354,9 +354,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                                   TextButton(
                                                     onPressed: () => Navigator.pop(context),
                                                     child: const Text('Close'),
-                                                  ),
-                                                ],
-                                              ),
+                      ),
+                    ],
+                  ),
                                             );
                                           });
                                       },
@@ -373,12 +373,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                 ? Center(
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(
+                      children: [
+                        const Icon(
                                           Icons.search_off,
                                           size: 48,
-                                          color: AppColors.gray400,
-                                        ),
+                          color: AppColors.gray400,
+                        ),
                                         const SizedBox(height: 16),
                                         const Text(
                                           'No results found',
@@ -392,10 +392,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                           'No conversations match "${_searchController.text}"',
                                           style: const TextStyle(
                                             color: AppColors.gray600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                          ),
+                        ),
+                      ],
+                    ),
                                   )
                                 : ChatListView(
                                     chatRooms: _searchResults,
@@ -463,9 +463,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                           child: const Text('Clear Cache & Reload'),
                                         ),
                                       ],
-                                    ),
-                                  ],
-                                ),
+                  ),
+                ],
+              ),
                               )
                             : _chatRooms.isEmpty
                                 ? Center(
@@ -502,6 +502,22 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                           ),
                                           child: const Text('Test Search (Debug)'),
                                         ),
+                                        const SizedBox(height: 16),
+                                        // Test button for Guide Profile
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              '/guide_profile',
+                                              arguments: 1, // Guide ID
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary800,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          child: const Text('View Guide Profile (Test)'),
+                                        ),
                                       ],
                                     ),
                                   )
@@ -510,19 +526,19 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                       await _loadChatRooms();
                                     },
                                     color: AppColors.primary800,
-                                    child: ChatListView(
+              child: ChatListView(
                                       chatRooms: _chatRooms,
-                                      onChatSelected: (chat) {
-                                        Navigator.pushNamed(
-                                          context,
-                                          '/chat',
-                                          arguments: chat,
+                onChatSelected: (chat) {
+                  Navigator.pushNamed(
+                    context,
+                    '/chat',
+                    arguments: chat,
                                         ).then((_) {
                                           _loadChatRooms();
                                         });
-                                      },
+                },
                                     ),
-                                  ),
+              ),
             ),
           ],
         ),
