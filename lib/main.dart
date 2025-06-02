@@ -4,10 +4,7 @@ import 'models/chat_room.dart';
 import 'screens/chat_list_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/token_setup_screen.dart';
-import 'screens/api_tester_screen.dart';
 import 'screens/guide_profile_screen.dart';
-import 'screens/tour_card_example_screen.dart';
-import 'screens/simple_tour_card_example.dart';
 
 void main() {
   runApp(const MyApp());
@@ -42,7 +39,7 @@ class MyApp extends StatelessWidget {
           surface: Colors.white,
         ),
       ),
-      initialRoute: '/simple_tour_card',
+      initialRoute: '/token_setup',
       onGenerateRoute: (settings) {
         if (settings.name == '/') {
           return MaterialPageRoute(
@@ -75,22 +72,10 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(
             builder: (context) => const TokenSetupScreen(),
           );
-        } else if (settings.name == '/api_tester') {
-          return MaterialPageRoute(
-            builder: (context) => const ApiTesterScreen(),
-          );
         } else if (settings.name == '/guide_profile') {
           final guideId = settings.arguments as int;
           return MaterialPageRoute(
             builder: (context) => GuideProfileScreen(guideId: guideId),
-          );
-        } else if (settings.name == '/tour_card_example') {
-          return MaterialPageRoute(
-            builder: (context) => const TourCardExampleScreen(),
-          );
-        } else if (settings.name == '/simple_tour_card') {
-          return MaterialPageRoute(
-            builder: (context) => const SimpleTourCardExample(),
           );
         }
         return null;

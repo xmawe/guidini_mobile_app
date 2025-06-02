@@ -186,30 +186,6 @@ class _TokenSetupScreenState extends State<TokenSetupScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/tour_card_example');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text('View Tour Card Example'),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/simple_tour_card');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.brown[700],
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text('View Simple Tour Card'),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
                       Navigator.pushNamed(context, '/guide_profile', arguments: 1);
                     },
                     style: ElevatedButton.styleFrom(

@@ -419,28 +419,7 @@ class _GuideProfileScreenState extends State<GuideProfileScreen> {
     );
   }
 
-  String _getYearsAgo(DateTime date) {
-    final difference = DateTime.now().difference(date);
-    final years = difference.inDays / 365;
-    
-    if (years < 1) {
-      final months = difference.inDays / 30;
-      if (months < 1) {
-        return 'Just joined';
-      }
-      return '${months.floor()} ${months.floor() == 1 ? 'month' : 'months'} ago';
-    }
-    
-    return '${years.floor()} ${years.floor() == 1 ? 'year' : 'years'} ago';
-  }
-
-  String _formatExperience(int years) {
-    if (years < 1) {
-      return 'New guide';
-    }
-    return '$years ${years == 1 ? 'year' : 'years'}';
-  }
-
+  
   Widget _buildBiographySection(Guide guide) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
