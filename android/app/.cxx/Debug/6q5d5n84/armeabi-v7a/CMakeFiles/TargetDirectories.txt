@@ -1,0 +1,2 @@
+C:/Users/MSI/guidini_mobile_app/android/app/.cxx/Debug/6q5d5n84/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/MSI/guidini_mobile_app/android/app/.cxx/Debug/6q5d5n84/armeabi-v7a/CMakeFiles/rebuild_cache.dir

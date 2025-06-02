@@ -19,11 +19,35 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
   fonts:
     - family: InstrumentSans
       fonts:
-        - asset: lib/assets/fonts/InstrumentSans-Regular.ttf
-        - asset: lib/assets/fonts/InstrumentSans-Bold.ttf
+        - asset: assets/fonts/InstrumentSans-Regular.ttf
+        - asset: assets/fonts/InstrumentSans-Bold.ttf
           weight: 700
+
   assets:
-    - lib/assets/images/
+    - assets/icons/search_icon.png
+    - assets/icons/star_filled.png
+    - assets/icons/checkmark_icon.png
+    - assets/icons/clock_small_icon.png
+    - assets/icons/eye_icon.png
+    - assets/icons/chat_icon.png
+    - assets/icons/home_nav_icon.png
+    - assets/icons/search_nav_icon.png
+    - assets/icons/bookings_nav_icon.png
+    - assets/icons/conversations_nav_icon.png
+    - assets/icons/verified_icon.png
+    - assets/icons/workshop_icon.png
+    - assets/icons/transport_icon.png
+    - assets/icons/tea_icon.png
+    - assets/icons/group_icon.png
+    - assets/icons/explore_icon.png
+    - assets/icons/clock_small_icon.png
+    - assets/icons/clock_icon.png
+    - assets/icons/activity_icon.png
+    - assets/icons/export_icon.png
+    - assets/images/marrakech_tour.jpg
+    
+
