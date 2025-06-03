@@ -15,8 +15,10 @@ class MyToursScreen extends StatefulWidget {
 
 class _MyToursScreenState extends State<MyToursScreen> {
   List<Tour> tours = [];
+  List<Tour> filteredTours = [];
   bool isLoading = true;
   String? errorMessage;
+  String selectedFilter = 'all'; // all, available, unavailable
 
   @override
   void initState() {
@@ -52,6 +54,7 @@ class _MyToursScreenState extends State<MyToursScreen> {
           setState(() {
             tours =
                 toursData.map((tourJson) => Tour.fromJson(tourJson)).toList();
+            _applyFilter();
             isLoading = false;
           });
         } else {
@@ -66,6 +69,22 @@ class _MyToursScreenState extends State<MyToursScreen> {
         isLoading = false;
       });
     }
+  }
+
+  void _applyFilter() {
+    setState(() {
+      if (selectedFilter == 'all') {
+        filteredTours = tours;
+      } else if (selectedFilter == 'available') {
+        filteredTours = tours
+            .where((tour) => tour.availabilityStatus == 'available')
+            .toList();
+      } else if (selectedFilter == 'unavailable') {
+        filteredTours = tours
+            .where((tour) => tour.availabilityStatus != 'available')
+            .toList();
+      }
+    });
   }
 
   Future<void> _refreshTours() async {
@@ -84,11 +103,36 @@ class _MyToursScreenState extends State<MyToursScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: RefreshIndicator(
-        onRefresh: _refreshTours,
-        backgroundColor: Colors.grey[50],
-        child: _buildBody(),
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: EdgeInsets.only(
+                  left: 16.0, top: 10, bottom: 10), // adjust 16.0 as needed
+              child: Text(
+                "My Tours",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _buildFilterTabs(),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _refreshTours,
+              backgroundColor: Colors.grey[50],
+              child: _buildBody(),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -100,6 +144,55 @@ class _MyToursScreenState extends State<MyToursScreen> {
         ),
         backgroundColor: AppColors.primary800,
         tooltip: 'Add Tour',
+      ),
+    );
+  }
+
+  Widget _buildFilterTabs() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _buildFilterChip('all', 'All'),
+            const SizedBox(width: 8),
+            _buildFilterChip('available', 'Available'),
+            const SizedBox(width: 8),
+            _buildFilterChip('unavailable', 'Unavailable'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String value, String label) {
+    final isSelected = selectedFilter == value;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedFilter = value;
+        });
+        _applyFilter();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary800 : Colors.grey[100],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.primary800 : Colors.grey[300]!,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[700],
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
@@ -153,7 +246,17 @@ class _MyToursScreenState extends State<MyToursScreen> {
       );
     }
 
-    if (tours.isEmpty) {
+    if (filteredTours.isEmpty) {
+      String emptyMessage = selectedFilter == 'all'
+          ? 'No tours found'
+          : selectedFilter == 'available'
+              ? 'No available tours found'
+              : 'No unavailable tours found';
+
+      String emptySubMessage = selectedFilter == 'all'
+          ? 'Create your first tour to get started'
+          : 'Try selecting a different filter';
+
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -165,7 +268,7 @@ class _MyToursScreenState extends State<MyToursScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No tours found',
+              emptyMessage,
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey[600],
@@ -174,7 +277,7 @@ class _MyToursScreenState extends State<MyToursScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Create your first tour to get started',
+              emptySubMessage,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[500],
@@ -187,9 +290,9 @@ class _MyToursScreenState extends State<MyToursScreen> {
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: tours.length,
+      itemCount: filteredTours.length,
       itemBuilder: (context, index) {
-        return TourCard(tour: tours[index]);
+        return TourCard(tour: filteredTours[index]);
       },
     );
   }

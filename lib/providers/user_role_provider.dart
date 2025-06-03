@@ -1,3 +1,4 @@
+// lib/providers/user_role_provider.dartAdd commentMore actions
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,28 +35,30 @@ class UserRoleProvider with ChangeNotifier {
         _currentRole = savedRole == 'guide' ? UserRole.guide : UserRole.tourist;
       }
     } catch (e) {
-      print('Error loading saved role: $e');
+      // print('Error loading saved role: $e');
     }
   }
 
-  /// Check if user can switch to guide role based on admin approval
+  /// Check if user can switch to guide role based on their profile
   Future<void> _checkGuideEligibility() async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Only allow switching if the backend confirms approval (e.g., guide_application_status == 'approved')
+      // Check if user has completed guide registration
+      // This could be based on having guide-specific data in profile
+      // or a flag from your backend API
       _canSwitchToGuide = prefs.getBool(_canSwitchKey) ??
-          (_userData?['guide_application_status'] == 'approved');
+          (_userData?['isGuide'] == true) ??
+          (_userData?['guideProfile'] != null);
     } catch (e) {
-      print('Error checking guide eligibility: $e');
+      // print('Error checking guide eligibility: $e');
     }
   }
 
   /// Switch user role
   Future<void> switchRole(UserRole newRole) async {
     if (newRole == UserRole.guide && !_canSwitchToGuide) {
-      throw Exception(
-          'User is not eligible to switch to guide role until admin approval');
+      throw Exception('User is not eligible to switch to guide role');
     }
 
     _currentRole = newRole;
@@ -70,21 +73,19 @@ class UserRoleProvider with ChangeNotifier {
       await prefs.setString(
           _roleKey, _currentRole == UserRole.guide ? 'guide' : 'tourist');
     } catch (e) {
-      print('Error saving role: $e');
+      // print('Error saving role: $e');
     }
   }
 
-  /// Enable guide role switching (call this after admin approval)
+  /// Enable guide role switching (call this after successful guide registration)
   Future<void> enableGuideRole() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_canSwitchKey, true);
       _canSwitchToGuide = true;
-      _currentRole = UserRole.guide; // Switch role after approval
-      await _saveRole();
       notifyListeners();
     } catch (e) {
-      print('Error enabling guide role: $e');
+      // print('Error enabling guide role: $e');
     }
   }
 

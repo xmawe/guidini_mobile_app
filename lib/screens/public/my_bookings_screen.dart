@@ -156,31 +156,25 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
             // Header
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                  const Text(
-                    'My bookings',
+            const Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                      left: 16.0, top: 10, bottom: 12), // adjust 16.0 as needed
+                  child: Text(
+                    "My Bookings",
                     style: TextStyle(
+                      color: Colors.black,
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontFamily: 'InstrumentSans',
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
-              ),
-            ),
+                )),
 
             // Search Bar
             Padding(
@@ -315,7 +309,7 @@ class _BookingCardState extends State<BookingCard> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -326,7 +320,7 @@ class _BookingCardState extends State<BookingCard> {
                     Text(
                       _formatDate(widget.booking.bookedDate),
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 12,
                         color: Color(0xFF6B7280),
                         fontFamily: 'InstrumentSans',
                         fontWeight: FontWeight.w400,
@@ -336,41 +330,39 @@ class _BookingCardState extends State<BookingCard> {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
                 // Tour Title
                 Text(
                   widget.booking.tour.title,
                   style: const TextStyle(
-                    fontSize: 22,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF111827),
                     fontFamily: 'InstrumentSans',
-                    height: 1.3,
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                // const SizedBox(height: 2),
 
                 // Location
                 Text(
                   widget.booking.tour.location.label,
                   style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF6B7280),
+                    fontSize: 14,
+                    color: AppColors.gray400,
                     fontFamily: 'InstrumentSans',
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
 
-                const SizedBox(height: 20),
-
+                const SizedBox(height: 8),
                 // Guide Info
                 const Text(
                   'Guided by',
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280),
+                    fontSize: 12,
+                    color: AppColors.gray300,
                     fontFamily: 'InstrumentSans',
                     fontWeight: FontWeight.w400,
                   ),
@@ -382,11 +374,11 @@ class _BookingCardState extends State<BookingCard> {
                   children: [
                     // Guide Avatar
                     Container(
-                      width: 24,
-                      height: 24,
+                      width: 28,
+                      height: 28,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Color(0xFF7C2D12),
+                        color: AppColors.primary800,
                       ),
                       child: const Icon(
                         Icons.person,
@@ -395,46 +387,76 @@ class _BookingCardState extends State<BookingCard> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      '${widget.booking.tour.guide.user.firstName} ${widget.booking.tour.guide.user.lastName}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
-                        fontFamily: 'InstrumentSans',
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment
+                            .start, // aligns children inside column to the left
+                        children: [
+                          Text(
+                            '${widget.booking.tour.guide.user.firstName} ${widget.booking.tour.guide.user.lastName}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF111827),
+                              fontFamily: 'InstrumentSans',
+                            ),
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.star,
+                                  size: 10, color: Color(0xFFFBBF24)),
+                              const SizedBox(width: 2),
+                              Text(
+                                widget.booking.tour.guide.rating,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: AppColors.gray950,
+                                  fontFamily: 'InstrumentSans',
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.star, size: 16, color: Color(0xFFFBBF24)),
-                    const SizedBox(width: 4),
-                    Text(
-                      widget.booking.tour.guide.rating,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF111827),
-                        fontFamily: 'InstrumentSans',
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    )
                   ],
                 ),
 
-                const SizedBox(height: 4),
+                // Row(
+                //   children: [
+                //     const SizedBox(width: 32), // Align with guide name
+                //     Container(
+                //       width: 6,
+                //       height: 6,
+                //       decoration: const BoxDecoration(
+                //         shape: BoxShape.circle,
+                //         color: Color(0xFFDC2626),
+                //       ),
+                //     ),
+                //     const SizedBox(width: 6),
+                //     Text(
+                //       widget.booking.tour.guide.user.city.name,
+                //       style: const TextStyle(
+                //         fontSize: 14,
+                //         color: Color(0xFF6B7280),
+                //         fontFamily: 'InstrumentSans',
+                //         fontWeight: FontWeight.w400,
+                //       ),
+                //     ),
+                //   ],
+                // ),
 
+                const SizedBox(height: 10),
+
+                // Price
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const SizedBox(width: 32), // Align with guide name
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFFDC2626),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
                     Text(
-                      widget.booking.tour.guide.user.city.name,
+                      'Group Size: ${widget.booking.groupSize}',
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color(0xFF6B7280),
@@ -442,20 +464,11 @@ class _BookingCardState extends State<BookingCard> {
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // Price
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
                     Text(
-                      '\$${double.parse(widget.booking.totalPrice).toInt()}',
+                      '\$${widget.booking.totalPrice}',
                       style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                         color: Color(0xFF111827),
                         fontFamily: 'InstrumentSans',
                       ),
@@ -482,13 +495,12 @@ class _BookingCardState extends State<BookingCard> {
                     // View Details Button
                     SizedBox(
                       width: double.infinity,
-                      height: 48,
                       child: ElevatedButton(
                         onPressed: () {
                           // Navigate to booking details
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF7C2D12),
+                          backgroundColor: AppColors.primary800,
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -498,12 +510,12 @@ class _BookingCardState extends State<BookingCard> {
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.percent, size: 18),
+                            Icon(Icons.percent, size: 16),
                             SizedBox(width: 8),
                             Text(
                               'View details',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 fontFamily: 'InstrumentSans',
                               ),
@@ -513,12 +525,11 @@ class _BookingCardState extends State<BookingCard> {
                       ),
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
 
                     // Contact Guide Button
                     SizedBox(
                       width: double.infinity,
-                      height: 48,
                       child: OutlinedButton(
                         onPressed: widget.onContactGuide,
                         style: OutlinedButton.styleFrom(
@@ -534,12 +545,12 @@ class _BookingCardState extends State<BookingCard> {
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.chat_bubble_outline, size: 18),
+                            Icon(Icons.chat_bubble_outline, size: 16),
                             SizedBox(width: 8),
                             Text(
                               'Contact guide',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 fontFamily: 'InstrumentSans',
                               ),
@@ -626,7 +637,7 @@ class _BookingCardState extends State<BookingCard> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
@@ -634,12 +645,12 @@ class _BookingCardState extends State<BookingCard> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: textColor),
+          Icon(icon, size: 12, color: textColor),
           const SizedBox(width: 6),
           Text(
             displayText,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 10,
               color: textColor,
               fontWeight: FontWeight.w600,
               fontFamily: 'InstrumentSans',

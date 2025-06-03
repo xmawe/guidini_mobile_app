@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:guidini/constants/colors.dart';
+import 'package:guidini/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -71,8 +72,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
 
   Future<void> _loadDropdownData() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final token = await AuthService.getToken();
 
       final response = await http.get(
         Uri.parse('${AppConfig.apiHost}/api/guide/tours/create'),
@@ -181,12 +181,11 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     });
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final token = await AuthService.getToken();
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.200.8:8000/api/tours'),
+        Uri.parse('${AppConfig.apiHost}/api/guide/tours'),
       );
 
       request.headers.addAll({
