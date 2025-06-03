@@ -1,6 +1,5 @@
 import 'tour.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class Guide {
   final int id;
@@ -16,62 +15,10 @@ class Guide {
   final DateTime updatedAt;
   List<Tour>? tours;
 
-  // userCreatedAt will be set after fetching user data using userId
+  // These properties are set after fetching additional data
   DateTime? userCreatedAt;
   String? cityName;
   bool? isOnline;
-
-  // Fetch city name using cityId if needed
-  Future<void> fetchCityName(int cityId) async {
-    final url = Uri.parse('http://127.0.0.1:8000/api/cities/$cityId');
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      this.cityName = data['name'] ?? 'Unknown City';
-    } else {
-      print('Failed to fetch city name for cityId $cityId');
-      this.cityName = 'Unknown City';
-    }
-  }
-
-  /// Fetch user data from the API to set userCreatedAt and other user info.
-  Future<void> fetchAndSetUserData() async {
-    final url = Uri.parse('http://127.0.0.1:8000/api/users/$userId');
-    try {
-      final response = await http.get(url);
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        
-        // Set user creation date
-        final createdAtStr = data['created_at'];
-        if (createdAtStr != null) {
-          userCreatedAt = DateTime.parse(createdAtStr);
-        }
-        
-        // Set online status
-        isOnline = data['is_online'] ?? false;
-        
-        // Set city name if available
-        if (data['city'] != null) {
-          cityName = data['city']['name'];
-        } else if (data['city_id'] != null) {
-          // Fallback to fetching city separately if needed
-          await fetchCityName(data['city_id']);
-        }
-      } else {
-        print('Failed to fetch user data for userId $userId: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching user data: $e');
-    }
-  }
-
-  /// Call this after creating a Guide instance to fetch and set user data.
-  Future<void> initUserData() async {
-    await fetchAndSetUserData();
-  }
 
   Guide({
     required this.id,
@@ -87,17 +34,16 @@ class Guide {
     required this.updatedAt,
     this.tours,
     this.userCreatedAt, // optional, can be set later
+    this.cityName,
+    this.isOnline,
   });
 
   String get fullName => '$firstName $lastName';
 
   int get yearsExperience => 
       DateTime.now().difference(createdAt).inDays ~/ 365;
-
   
   int get reviewsCount => 193;
-
-  
 
   // Calculate years since user joined the platform
   String getJoinedTime() {
@@ -190,6 +136,16 @@ class Guide {
     userCreatedAt = date;
   }
 
+  // Set city name
+  void setCityName(String name) {
+    cityName = name;
+  }
+
+  // Set online status
+  void setOnlineStatus(bool status) {
+    isOnline = status;
+  }
+
   static Guide mockGuide() {
     return Guide(
       id: 1,
@@ -232,6 +188,8 @@ class Guide {
         ),
       ],
       userCreatedAt: DateTime.now().subtract(const Duration(days: 365 * 6)), // For mock only
+      cityName: 'Marrakech',
+      isOnline: false,
     );
   }
 }

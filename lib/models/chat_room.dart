@@ -11,6 +11,7 @@ class ChatRoom {
   final bool isVerified;
   final String? profilePicture;
   final String? location;
+  final String? otherUserLocation;
   final double? rating;
   final bool isOnline;
   final bool isLastMessageFromMe;
@@ -26,6 +27,7 @@ class ChatRoom {
     required this.isVerified,
     this.profilePicture,
     this.location,
+    this.otherUserLocation,
     this.rating,
     this.isOnline = false,
     this.isLastMessageFromMe = false,
@@ -48,6 +50,8 @@ class ChatRoom {
       unreadCount: json['unread_count'] is int ? json['unread_count'] : 0,
       isVerified: false, // This field is not in the provided JSON
       profilePicture: otherUser?['profile_picture']?.toString(),
+      location: otherUser?['city'] != null ? '${otherUser?['city']}, Morocco' : null,
+      otherUserLocation: otherUser?['city_name'] != null ? '${otherUser?['city_name']}, Morocco' : null,
       isOnline: otherUser?['is_online'] == true,
       isLastMessageFromMe: lastMessageData?['is_from_me'] == true,
     );
@@ -140,6 +144,7 @@ class ChatRoom {
       'is_verified': isVerified,
       'profile_picture': profilePicture,
       'location': location,
+      'other_user_location': otherUserLocation,
       'rating': rating,
       'is_online': isOnline,
       'is_last_message_from_me': isLastMessageFromMe,

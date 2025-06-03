@@ -4,6 +4,7 @@ import '../widgets/common/bottom_nav_bar.dart';
 import '../widgets/chat_list/chat_list_view.dart';
 import '../models/chat_room.dart';
 import '../services/chat_service.dart';
+import '../services/auth_service.dart';
 import '../services/service_provider.dart';
 import '../services/token_service.dart';
 import '../widgets/common/app_header.dart';
@@ -18,6 +19,7 @@ class ChatListScreen extends StatefulWidget {
 class _ChatListScreenState extends State<ChatListScreen> {
   int _currentIndex = 3; // Conversations tab
   final ChatService _chatService = ServiceProvider().getChatService();
+  final AuthService _authService = ServiceProvider().getAuthService();
   List<ChatRoom> _chatRooms = [];
   bool _isLoading = true;
   bool _hasError = false;
@@ -35,12 +37,23 @@ class _ChatListScreenState extends State<ChatListScreen> {
   void initState() {
     super.initState();
     _loadChatRooms();
+    _updateUserOnlineStatus();
   }
   
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  // Update user's online status
+  Future<void> _updateUserOnlineStatus() async {
+    try {
+      await _authService.updateLastActivity();
+      print('User online status updated');
+    } catch (e) {
+      print('Error updating user online status: $e');
+    }
   }
 
   Future<void> _loadChatRooms() async {

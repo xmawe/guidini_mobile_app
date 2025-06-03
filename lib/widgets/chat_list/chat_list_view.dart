@@ -70,21 +70,20 @@ class ChatListView extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // Online indicator
-                    if (chat.isOnline)
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            border: Border.all(color: Colors.white, width: 2),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
+                    // Online status indicator (green for online, gray for offline)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: chat.isOnline ? AppColors.success : AppColors.gray400,
+                          border: Border.all(color: Colors.white, width: 2),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                       ),
+                    ),
                   ],
                 ),
                 const SizedBox(width: 12),

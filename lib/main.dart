@@ -52,17 +52,54 @@ class MyApp extends StatelessWidget {
         } else if (settings.name == '/chat') {
           // Handle both ChatRoom objects and Map arguments
           if (settings.arguments is ChatRoom) {
-          final chat = settings.arguments as ChatRoom;
-          return MaterialPageRoute(
-            builder: (context) => ChatScreen(chat: chat),
+            final chat = settings.arguments as ChatRoom;
+            return MaterialPageRoute(
+              builder: (context) => ChatScreen(chat: chat),
             );
           } else if (settings.arguments is Map) {
-            // We'll handle this case when implementing the chat from guide profile
-            // This is just a placeholder for now
-            final args = settings.arguments as Map;
-            return MaterialPageRoute(
-              builder: (context) => const ChatListScreen(),
-            );
+            // Handle chat data from guide profile
+            final args = settings.arguments as Map<dynamic, dynamic>;
+            
+            try {
+              // Convert the dynamic Map to a Map<String, dynamic> before creating the ChatRoom
+              final Map<String, dynamic> chatData = {};
+              args.forEach((key, value) {
+                chatData[key.toString()] = value;
+              });
+              
+              final chatRoom = ChatRoom.fromJson(chatData);
+              
+              return MaterialPageRoute(
+                builder: (context) => ChatScreen(chat: chatRoom),
+              );
+            } catch (e) {
+              print('Error creating ChatRoom from Map: $e');
+              // Return error screen if chat room creation fails
+              return MaterialPageRoute(
+                builder: (context) => Scaffold(
+                  appBar: AppBar(title: const Text('Error')),
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                        const SizedBox(height: 16),
+                        const Text('Failed to open chat room'),
+                        const SizedBox(height: 8),
+                        Text('Error: $e', style: const TextStyle(fontSize: 12)),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushReplacementNamed(context, '/');
+                          },
+                          child: const Text('Go to Chat List'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
           } else {
             return MaterialPageRoute(
               builder: (context) => const ChatListScreen(),

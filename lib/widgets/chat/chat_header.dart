@@ -56,23 +56,22 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
               ),
-              if (isOnline)
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: AppColors.success,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(6),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: isOnline ? AppColors.success : AppColors.gray400,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2,
                     ),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
+              ),
             ],
           ),
           const SizedBox(width: 12),

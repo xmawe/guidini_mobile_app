@@ -2,11 +2,19 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/tour.dart';
 import '../models/guide.dart';
+import '../services/token_service.dart';
+import '../services/guide_service.dart';
+import '../services/service_provider.dart';
 
 class TourService {
   // In a real app, this should be determined by the environment
   // and use a platform-specific approach for emulators
   static const String baseUrl = 'http://127.0.0.1:8000/api';
+
+  // Helper method to get auth token
+  Future<String?> _getAuthToken() async {
+    return await TokenService.getToken();
+  }
 
   // Get all tours
   Future<List<Tour>> getTours({String? location}) async {
@@ -58,7 +66,9 @@ class TourService {
           guide.tours = _getMockTours();
         }
         
-        return guide;
+        // Get the guide service to enhance the guide with user data
+        final guideService = ServiceProvider().getGuideService();
+        return await guideService.enhanceGuideData(guide);
       } else {
         print('Failed to load guide, using mock data: ${response.statusCode}');
         print('Response body: ${response.body}');
@@ -140,31 +150,85 @@ class TourService {
   // Contact guide to initiate a chat
   Future<Map<String, dynamic>> contactGuide(int guideId, String message) async {
     try {
+      print('Creating or getting chat room with user ID: $guideId');
+      
+      // Get auth token
+      final token = await _getAuthToken();
+      if (token == null) {
+        throw Exception('Authentication token not found');
+      }
+      
+      // Get current user information
+      final currentUserData = await _getCurrentUserData(token);
+      if (currentUserData != null && currentUserData['id'] == guideId) {
+        throw Exception('Cannot start a conversation with yourself');
+      }
+      
       final response = await http.post(
         Uri.parse('$baseUrl/chat/rooms'),
         headers: {
           'Content-Type': 'application/json',
-          // Add authentication headers if needed
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
         },
         body: json.encode({
           'user_id': guideId,
-          'message': message,
         }),
       );
       
+      print('Chat room API response status: ${response.statusCode}');
+      print('Chat room API response body: ${response.body}');
+      
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return json.decode(response.body);
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'chat_room_id': data['chat_room_id'],
+          'is_new': data['is_new'] ?? false
+        };
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        throw Exception('Not authorized. Please check your authentication token.');
       } else {
-        throw Exception('Failed to contact guide: ${response.statusCode}');
+        throw Exception('Failed to contact guide: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       print('Error contacting guide: $e');
+      
+      // Don't return mock data if it's a self-chat error
+      if (e.toString().contains('Cannot start a conversation with yourself')) {
+        return {
+          'success': false,
+          'error': e.toString()
+        };
+      }
+      
       // Return mock data for testing
       return {
         'success': true,
         'chat_room_id': 1,
-        'message': 'Chat room created successfully'
+        'is_new': false
       };
+    }
+  }
+  
+  // Helper method to get current user data
+  Future<Map<String, dynamic>?> _getCurrentUserData(String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/user'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error getting current user data: $e');
+      return null;
     }
   }
 } 

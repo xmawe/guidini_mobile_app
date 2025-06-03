@@ -8,6 +8,7 @@ import '../widgets/chat/chat_input.dart';
 import '../widgets/chat/chat_header.dart';
 import '../widgets/chat/day_separator.dart';
 import '../services/chat_service.dart';
+import '../services/auth_service.dart';
 import '../services/service_provider.dart';
 import '../utils/message_utils.dart';
 
@@ -25,6 +26,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final ChatService _chatService = ServiceProvider().getChatService();
+  final AuthService _authService = ServiceProvider().getAuthService();
   List<Message> _messages = [];
   bool _isLoading = true;
   bool _hasError = false;
@@ -51,6 +53,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _loadMessages();
     // Mark as read only once when entering chat room
     _markAsRead();
+    // Update user's online status
+    _updateUserOnlineStatus();
   }
 
   @override
@@ -64,6 +68,18 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       // Refresh messages when app is resumed
       _loadMessages();
+      // Update user's online status when app is resumed
+      _updateUserOnlineStatus();
+    }
+  }
+  
+  // Update user's online status
+  Future<void> _updateUserOnlineStatus() async {
+    try {
+      await _authService.updateLastActivity();
+      print('User online status updated from chat screen');
+    } catch (e) {
+      print('Error updating user online status: $e');
     }
   }
 
@@ -417,7 +433,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       backgroundColor: Colors.white,
       appBar: ChatHeader(
         userName: widget.chat.userName,
-        userLocation: widget.chat.location ?? 'Unknown location',
+        userLocation: widget.chat.otherUserLocation ?? widget.chat.location ?? 'Unknown location',
         rating: widget.chat.rating ?? 4.5,
         profilePicture: widget.chat.profilePicture,
         isOnline: widget.chat.isOnline,

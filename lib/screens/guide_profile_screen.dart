@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../models/guide.dart';
 import '../models/tour.dart';
 import '../services/tour_service.dart';
+import '../services/guide_service.dart';
+import '../services/service_provider.dart';
 import '../constants/colors.dart';
 import '../widgets/tour/tour_card.dart';
 
@@ -22,6 +24,7 @@ class GuideProfileScreen extends StatefulWidget {
 class _GuideProfileScreenState extends State<GuideProfileScreen> {
   late Future<Guide> _guideFuture;
   final TourService _tourService = TourService();
+  final GuideService _guideService = ServiceProvider().getGuideService();
   bool _isLoading = true;
   
   @override
@@ -32,10 +35,8 @@ class _GuideProfileScreenState extends State<GuideProfileScreen> {
 
   Future<Guide> _loadGuideData() async {
     try {
+      // TourService.getGuideById now also enhances the guide with user data
       final guide = await _tourService.getGuideById(widget.guideId);
-      
-      // Load additional user data (creation date, city info, online status)
-      await guide.initUserData();
       
       setState(() {
         _isLoading = false;
@@ -480,25 +481,103 @@ class _GuideProfileScreenState extends State<GuideProfileScreen> {
 
   void _initiateChat(Guide guide) async {
     try {
-      final result = await _tourService.contactGuide(guide.id, "Hello, I'm interested in your tours.");
+      // Check if the user is trying to chat with themselves based on guide info
+      // This is a front-end check, but we also have a back-end check in the service
+      if (guide.id == guide.userId) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You cannot start a conversation with yourself'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
       
-      if (result.containsKey('chat_room_id')) {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Starting conversation...'), duration: Duration(seconds: 1)),
+      );
+      
+      // Call API to create or get chat room
+      final result = await _tourService.contactGuide(guide.id, "");
+      
+      if (result['success'] == true && result.containsKey('chat_room_id')) {
         int chatRoomId = result['chat_room_id'];
+        bool isNewChat = result['is_new'] == true;
         
-        // Navigate to chat screen with this guide
+        // Create a ChatRoom object for navigation
+        final chatRoom = {
+          'id': chatRoomId,
+          'other_user': {
+            'id': guide.id,
+            'name': guide.fullName,
+            'profile_picture': guide.profilePicture,
+            'is_online': guide.isOnline ?? false
+          },
+          'last_message': {
+            'content': isNewChat ? 'Start a conversation' : 'Continue your conversation',
+            'created_at': DateTime.now().toIso8601String(),
+            'is_from_me': false
+          },
+          'unread_count': 0
+        };
+        
+        // Navigate to chat screen with the created chat room data
         Navigator.pushNamed(
           context,
           '/chat',
-          arguments: {
-            'chatRoomId': chatRoomId,
-            'guideName': guide.fullName,
-          },
+          arguments: chatRoom,
+        );
+      } else if (result.containsKey('error') && result['error'].toString().contains('yourself')) {
+        // Handle specific error for self-chat
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You cannot start a conversation with yourself'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to start conversation. Please try again.')),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to start conversation: $e')),
-      );
+      print('Chat initiation error: $e');
+      
+      // Check if it's a self-chat error
+      if (e.toString().contains('yourself')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You cannot start a conversation with yourself'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      
+      // Check if it's an authentication error
+      if (e.toString().contains('token') || 
+          e.toString().contains('auth') ||
+          e.toString().contains('401') || 
+          e.toString().contains('403')) {
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Authentication required. Redirecting to login...'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        
+        // Navigate to token setup screen
+        Future.delayed(const Duration(seconds: 2), () {
+          Navigator.pushReplacementNamed(context, '/token_setup');
+        });
+      } else {
+        // Show general error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to start conversation: $e')),
+        );
+      }
     }
   }
 
