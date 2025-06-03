@@ -21,6 +21,7 @@ class ActivityData {
     return (title?.isNotEmpty ?? false) &&
         (description?.isNotEmpty ?? false) &&
         categoryId != null &&
-        duration != null;
+        duration != null &&
+        locationLabel?.isNotEmpty == true;
   }
 }

@@ -4,6 +4,7 @@ import 'dart:convert';
 import '../../constants/colors.dart';
 import 'package:guidini/widgets/custom_input_field.dart';
 import 'package:guidini/services/auth_service.dart';
+import 'package:guidini/config/app_config.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({Key? key}) : super(key: key);
@@ -99,7 +100,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://192.168.200.8:8000/api/user/edit/security'),
+        Uri.parse('${AppConfig.apiHost}/api/user/edit/security'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

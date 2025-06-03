@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:guidini/models/activity_data.dart';
 import 'activity_card.dart';
+import 'package:guidini/constants/colors.dart';
 
 class ActivitiesStep extends StatelessWidget {
   final List<ActivityData> activities;
@@ -53,6 +54,10 @@ class ActivitiesStep extends StatelessWidget {
                 onPressed: _addActivity,
                 icon: const Icon(Icons.add),
                 label: const Text('Add Activity'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary800,
+                ),
               ),
             ],
           ),

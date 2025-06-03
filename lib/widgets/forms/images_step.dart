@@ -152,7 +152,7 @@ class _ImagesStepState extends State<ImagesStep> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Tour Images *',
+            'Tour Images',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),

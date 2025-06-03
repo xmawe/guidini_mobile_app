@@ -1,5 +1,5 @@
-// widgets/activity_card.dart (Updated)
 import 'package:flutter/material.dart';
+import 'package:guidini/constants/colors.dart';
 import 'package:guidini/models/activity_data.dart';
 import 'package:guidini/widgets/custom_input_field.dart';
 import 'package:guidini/widgets/location_picker_dialog.dart';
@@ -118,7 +118,8 @@ class _ActivityCardState extends State<ActivityCard> {
                     if (widget.canDelete)
                       IconButton(
                         onPressed: widget.onDelete,
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(Icons.delete_outline,
+                            color: Colors.grey),
                       ),
                   ],
                 ),
@@ -131,43 +132,38 @@ class _ActivityCardState extends State<ActivityCard> {
               controller: _titleController,
             ),
             const SizedBox(height: 16),
-            CustomInputField(
-              label: 'Description',
-              hint: 'Enter activity description',
+            TextFormField(
               controller: _descriptionController,
+              maxLines: 3,
+              decoration: customInputDecoration(
+                label: 'Description',
+                hint: 'Enter activity description',
+              ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<int>(
-                    value: widget.activity.categoryId,
-                    decoration: customInputDecoration(
-                      label: 'Category',
-                    ),
-                    items: widget.activityCategories
-                        .map<DropdownMenuItem<int>>((category) {
-                      return DropdownMenuItem<int>(
-                        value: category['id'],
-                        child: Text(category['name']),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      widget.activity.categoryId = value;
-                      widget.onChanged();
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: CustomInputField(
-                    label: 'Duration (min)',
-                    hint: 'Enter duration in minutes',
-                    controller: _durationController,
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-              ],
+            DropdownButtonFormField<int>(
+              value: widget.activity.categoryId,
+              decoration: customInputDecoration(
+                label: 'Category',
+              ),
+              items: widget.activityCategories
+                  .map<DropdownMenuItem<int>>((category) {
+                return DropdownMenuItem<int>(
+                  value: category['id'],
+                  child: Text(category['name']),
+                );
+              }).toList(),
+              onChanged: (value) {
+                widget.activity.categoryId = value;
+                widget.onChanged();
+              },
+            ),
+            const SizedBox(height: 16),
+            CustomInputField(
+              label: 'Duration (min)',
+              hint: 'Enter duration in minutes',
+              controller: _durationController,
+              keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 16),
 
@@ -247,6 +243,8 @@ class _ActivityCardState extends State<ActivityCard> {
                 ),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.primary800,
                 ),
               ),
             ),

@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:guidini/constants/colors.dart';
 
 class LocationPickerDialog extends StatefulWidget {
   final double? initialLatitude;
@@ -136,7 +137,7 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      child: Container(
+      child: SizedBox(
         width: MediaQuery.of(context).size.width * 0.9,
         height: MediaQuery.of(context).size.height * 0.8,
         child: Column(
@@ -144,12 +145,8 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
             // Header
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
+              decoration: const BoxDecoration(
+                color: AppColors.primary800,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -203,9 +200,11 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                   FlutterMap(
                     mapController: _mapController,
                     options: MapOptions(
+                      // ignore: deprecated_member_use
                       center: _selectedLocation ??
                           const LatLng(
                               31.625969, -7.989226), // Default to Morocco
+                      // ignore: deprecated_member_use
                       zoom: _selectedLocation != null ? 15.0 : 10.0,
                       onTap: _onMapTap,
                     ),
@@ -221,8 +220,8 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                             Marker(
                               point: _selectedLocation!,
                               child: const Icon(
-                                Icons.location_pin,
-                                color: Colors.red,
+                                Icons.my_location,
+                                color: AppColors.primary500,
                                 size: 40,
                               ),
                             ),
@@ -238,13 +237,14 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                     child: FloatingActionButton(
                       mini: true,
                       onPressed: _isLoading ? null : _getCurrentLocation,
+                      backgroundColor: AppColors.primary800,
                       child: _isLoading
                           ? const SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.my_location),
+                          : const Icon(Icons.my_location, color: Colors.white),
                     ),
                   ),
                 ],
@@ -254,18 +254,24 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
             // Action buttons
             Container(
               padding: const EdgeInsets.all(16),
+              color: Colors.white,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Expanded(
                     child: TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
-                    ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(color: AppColors.gray400),
+                        )),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary800,
+                      ),
                       onPressed: _selectedLocation != null
                           ? () {
                               Navigator.of(context).pop({
@@ -275,7 +281,8 @@ class _LocationPickerDialogState extends State<LocationPickerDialog> {
                               });
                             }
                           : null,
-                      child: const Text('Select'),
+                      child: const Text('Select',
+                          style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],

@@ -1,6 +1,7 @@
-// widgets/forms/schedule_step.dart
 import 'package:flutter/material.dart';
-import 'package:guidini/models/tour_date_data.dart'; // Import the model
+import 'package:guidini/models/tour_date_data.dart';
+import 'package:guidini/constants/colors.dart';
+import 'package:guidini/widgets/custom_input_field.dart';
 
 class ScheduleStep extends StatefulWidget {
   final List<TourDateData> tourDates;
@@ -35,6 +36,57 @@ class _ScheduleStepState extends State<ScheduleStep> {
     widget.onTourDatesChanged(updatedDates);
   }
 
+  Future<void> _selectTime(
+      BuildContext context, int index, bool isStartTime) async {
+    final tourDate = widget.tourDates[index];
+    final currentTime = isStartTime ? tourDate.startTime : tourDate.endTime;
+
+    // Parse current time or use default
+    TimeOfDay initialTime = const TimeOfDay(hour: 9, minute: 0);
+    if (currentTime != null && currentTime.isNotEmpty) {
+      final parts = currentTime.split(':');
+      if (parts.length == 2) {
+        final hour = int.tryParse(parts[0]);
+        final minute = int.tryParse(parts[1]);
+        if (hour != null && minute != null) {
+          initialTime = TimeOfDay(hour: hour, minute: minute);
+        }
+      }
+    } else if (!isStartTime) {
+      initialTime = const TimeOfDay(hour: 17, minute: 0);
+    }
+
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primary800,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      final timeString =
+          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+
+      final updatedDate = TourDateData(
+        dayOfWeek: tourDate.dayOfWeek,
+        startTime: isStartTime ? timeString : tourDate.startTime,
+        endTime: isStartTime ? tourDate.endTime : timeString,
+      );
+      _updateTourDate(index, updatedDate);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -46,13 +98,17 @@ class _ScheduleStepState extends State<ScheduleStep> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Tour Schedule *',
+                'Tour Schedule',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               ElevatedButton.icon(
                 onPressed: _addTourDate,
                 icon: const Icon(Icons.add),
                 label: const Text('Add Schedule'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary800,
+                ),
               ),
             ],
           ),
@@ -89,8 +145,11 @@ class _ScheduleStepState extends State<ScheduleStep> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+      color: Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -111,18 +170,20 @@ class _ScheduleStepState extends State<ScheduleStep> {
                     if (widget.tourDates.length > 1)
                       IconButton(
                         onPressed: () => _removeTourDate(index),
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(Icons.delete_outline,
+                            color: Colors.grey),
                       ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             DropdownButtonFormField<int>(
               value: tourDate.dayOfWeek,
-              decoration: const InputDecoration(
-                labelText: 'Day of Week *',
-                border: OutlineInputBorder(),
+              decoration: customInputDecoration(
+                label: 'Day of Week',
+                prefixIcon: const Icon(Icons.calendar_today_outlined,
+                    color: AppColors.gray300, size: 20),
               ),
               items: days.asMap().entries.map<DropdownMenuItem<int>>((entry) {
                 return DropdownMenuItem<int>(
@@ -139,47 +200,106 @@ class _ScheduleStepState extends State<ScheduleStep> {
                 _updateTourDate(index, updatedDate);
               },
             ),
-            const SizedBox(height: 16),
-            Row(
+            const SizedBox(height: 20),
+
+            // Creative Time Picker Section
+            Column(
               children: [
-                Expanded(
-                  child: TextFormField(
-                    initialValue: tourDate.startTime,
-                    decoration: const InputDecoration(
-                      labelText: 'Start Time (HH:MM) *',
-                      border: OutlineInputBorder(),
-                      hintText: '09:00',
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTimePickerCard(
+                        context: context,
+                        index: index,
+                        isStartTime: true,
+                        title: 'Start Time',
+                        time: tourDate.startTime ?? '09:00',
+                        icon: Icons.play_circle_outline,
+                        color: Colors.green,
+                      ),
                     ),
-                    onChanged: (value) {
-                      final updatedDate = TourDateData(
-                        dayOfWeek: tourDate.dayOfWeek,
-                        startTime: value,
-                        endTime: tourDate.endTime,
-                      );
-                      _updateTourDate(index, updatedDate);
-                    },
-                  ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildTimePickerCard(
+                        context: context,
+                        index: index,
+                        isStartTime: false,
+                        title: 'End Time',
+                        time: tourDate.endTime ?? '17:00',
+                        icon: Icons.stop_circle_outlined,
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextFormField(
-                    initialValue: tourDate.endTime,
-                    decoration: const InputDecoration(
-                      labelText: 'End Time (HH:MM) *',
-                      border: OutlineInputBorder(),
-                      hintText: '17:00',
-                    ),
-                    onChanged: (value) {
-                      final updatedDate = TourDateData(
-                        dayOfWeek: tourDate.dayOfWeek,
-                        startTime: tourDate.startTime,
-                        endTime: value,
-                      );
-                      _updateTourDate(index, updatedDate);
-                    },
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimePickerCard({
+    required BuildContext context,
+    required int index,
+    required bool isStartTime,
+    required String title,
+    required String time,
+    required IconData icon,
+    required Color color,
+  }) {
+    return GestureDetector(
+      onTap: () => _selectTime(context, index, isStartTime),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.gray100,
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.gray400,
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                time,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tap to change',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey.shade600,
+              ),
             ),
           ],
         ),

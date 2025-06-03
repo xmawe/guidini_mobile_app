@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:guidini/providers/user_role_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:guidini/screens/onboard_screen.dart';
+import 'package:guidini/screens/public/onboard_screen.dart';
 import 'package:guidini/screens/auth/login_screen.dart';
 import 'package:guidini/screens/auth/register_screen.dart';
 import 'package:guidini/layouts/main_navigation_screen.dart';
@@ -9,7 +9,7 @@ import 'package:guidini/services/auth_service.dart';
 import "package:guidini/constants/colors.dart";
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
 
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'guidini',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary800),
+          colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary600),
           useMaterial3: true,
         ),
         debugShowCheckedModeBanner: false,
@@ -100,7 +100,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
         });
       }
     } catch (e) {
-      print('Error checking auth state: $e');
+      // print('Error checking auth state: $e');
       setState(() {
         _isLoading = false;
       });

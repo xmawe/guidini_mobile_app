@@ -9,8 +9,10 @@ import 'package:guidini/widgets/forms/basic_info_step.dart';
 import 'package:guidini/widgets/forms/activities_step.dart';
 import 'package:guidini/widgets/forms/schedule_step.dart';
 import 'package:guidini/widgets/forms/images_step.dart';
+import 'package:guidini/widgets/forms/review_step.dart'; // Add this import
 import 'package:guidini/models/activity_data.dart';
 import 'package:guidini/models/tour_date_data.dart';
+import 'package:guidini/config/app_config.dart';
 
 class CreateTourScreen extends StatefulWidget {
   const CreateTourScreen({Key? key}) : super(key: key);
@@ -73,7 +75,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
       final token = prefs.getString('token');
 
       final response = await http.get(
-        Uri.parse('http://192.168.200.8:8000/api/tours'),
+        Uri.parse('${AppConfig.apiHost}/api/guide/tours/create'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -114,15 +116,44 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
         return _tourDates.any((date) => date.isValid());
       case 3:
         return _selectedImages.isNotEmpty;
+      case 4:
+        // Review step - all previous validations should pass
+        return _validateAllSteps();
       default:
         return true;
     }
   }
 
+  bool _validateAllSteps() {
+    // Validate basic info
+    if (_titleController.text.isEmpty ||
+        _descriptionController.text.isEmpty ||
+        _priceController.text.isEmpty ||
+        _durationController.text.isEmpty ||
+        _maxGroupSizeController.text.isEmpty ||
+        _selectedCityId == null) {
+      return false;
+    }
+
+    // Validate activities
+    final validActivities =
+        _activities.where((activity) => activity.isValid()).toList();
+    if (validActivities.isEmpty) return false;
+
+    // Validate tour dates
+    final validDates = _tourDates.where((date) => date.isValid()).toList();
+    if (validDates.isEmpty) return false;
+
+    // Validate images
+    if (_selectedImages.isEmpty) return false;
+
+    return true;
+  }
+
   Future<void> _submitTour() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (!_validateStep()) {
+    if (!_validateAllSteps()) {
       _showErrorSnackBar('Please complete all required fields');
       return;
     }
@@ -155,7 +186,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.200.8:8000/api/tours'),
+        Uri.parse('${AppConfig.apiHost}/api/guide/tours'),
       );
 
       request.headers.addAll({
@@ -266,12 +297,15 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
         case 3:
           message = 'Please add at least one tour image';
           break;
+        case 4:
+          message = 'Please complete all steps before creating the tour';
+          break;
       }
       _showErrorSnackBar(message);
       return;
     }
 
-    if (_currentStep < 3) {
+    if (_currentStep < 4) {
       setState(() {
         _currentStep++;
       });
@@ -304,139 +338,220 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Tour'),
-        elevation: 0,
-        backgroundColor: Colors.white,
-      ),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            // Progress indicator
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.white,
-              child: Row(
-                children: List.generate(4, (index) {
-                  return Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: index <= _currentStep
-                            ? AppColors.primary800
-                            : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
+        appBar: AppBar(
+          title: const Text('Create Tour'),
+          elevation: 0,
+          backgroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (_currentStep > 0) {
+                _previousStep();
+              } else {
+                Navigator.pop(context);
+              }
+            },
+          ),
+        ),
+        body: Container(
+          color: Colors.white,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                // Progress indicator
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Colors.white,
+                  child: Row(
+                    children: List.generate(5, (index) {
+                      return Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: index <= _currentStep
+                                ? AppColors.primary800
+                                : Colors.grey[300],
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                // Step labels
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  color: Colors.white,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildStepLabel('Basic Info', 0),
+                      _buildStepLabel('Activities', 1),
+                      _buildStepLabel('Schedule', 2),
+                      _buildStepLabel('Images', 3),
+                      _buildStepLabel('Review', 4),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Form content
+                Expanded(
+                  child: Container(
+                    color: Colors.white,
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        BasicInfoStep(
+                          titleController: _titleController,
+                          descriptionController: _descriptionController,
+                          priceController: _priceController,
+                          durationController: _durationController,
+                          maxGroupSizeController: _maxGroupSizeController,
+                          cities: _cities,
+                          selectedCityId: _selectedCityId,
+                          availabilityStatus: _availabilityStatus,
+                          isTransportIncluded: _isTransportIncluded,
+                          isFoodIncluded: _isFoodIncluded,
+                          onCityChanged: (value) =>
+                              setState(() => _selectedCityId = value),
+                          onAvailabilityChanged: (value) =>
+                              setState(() => _availabilityStatus = value!),
+                          onTransportChanged: (value) =>
+                              setState(() => _isTransportIncluded = value!),
+                          onFoodChanged: (value) =>
+                              setState(() => _isFoodIncluded = value!),
+                        ),
+                        ActivitiesStep(
+                          activities: _activities,
+                          activityCategories: _activityCategories,
+                          onActivitiesChanged: (updatedActivities) {
+                            setState(() {
+                              _activities = updatedActivities;
+                            });
+                          },
+                        ),
+                        ScheduleStep(
+                          tourDates: _tourDates,
+                          onTourDatesChanged: (updatedTourDates) {
+                            setState(() {
+                              _tourDates = updatedTourDates;
+                            });
+                          },
+                        ),
+                        ImagesStep(
+                          selectedImages: _selectedImages,
+                          onImagesChanged: (updatedImages) {
+                            setState(() {
+                              _selectedImages = updatedImages;
+                            });
+                          },
+                          onShowError: _showErrorSnackBar,
+                          onShowSuccess: _showSuccessSnackBar,
+                        ),
+                        ReviewStep(
+                          title: _titleController.text,
+                          description: _descriptionController.text,
+                          price: _priceController.text,
+                          duration: _durationController.text,
+                          maxGroupSize: _maxGroupSizeController.text,
+                          cities: _cities,
+                          selectedCityId: _selectedCityId,
+                          availabilityStatus: _availabilityStatus,
+                          isTransportIncluded: _isTransportIncluded,
+                          isFoodIncluded: _isFoodIncluded,
+                          activities: _activities,
+                          tourDates: _tourDates,
+                          selectedImages: _selectedImages,
+                          activityCategories: _activityCategories,
+                        ),
+                      ],
                     ),
-                  );
-                }),
-              ),
+                  ),
+                ),
+                // Navigation buttons
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Colors.white,
+                  child: Row(
+                    children: [
+                      if (_currentStep > 0)
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _previousStep,
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: AppColors.primary800),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              'Previous',
+                              style: TextStyle(color: AppColors.primary800),
+                            ),
+                          ),
+                        ),
+                      if (_currentStep > 0) const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary800,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: _isLoading
+                              ? null
+                              : (_currentStep == 4 ? _submitTour : _nextStep),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  _currentStep == 4 ? 'Create Tour' : 'Next',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            // Form content
-            Expanded(
-                child: // In your CreateTourScreen build method, replace the PageView children with:
-                    Container(
-              color: Colors.white, // Background for the form area
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  BasicInfoStep(
-                    titleController: _titleController,
-                    descriptionController: _descriptionController,
-                    priceController: _priceController,
-                    durationController: _durationController,
-                    maxGroupSizeController: _maxGroupSizeController,
-                    cities: _cities,
-                    selectedCityId: _selectedCityId,
-                    availabilityStatus: _availabilityStatus,
-                    isTransportIncluded: _isTransportIncluded,
-                    isFoodIncluded: _isFoodIncluded,
-                    onCityChanged: (value) =>
-                        setState(() => _selectedCityId = value),
-                    onAvailabilityChanged: (value) =>
-                        setState(() => _availabilityStatus = value!),
-                    onTransportChanged: (value) =>
-                        setState(() => _isTransportIncluded = value!),
-                    onFoodChanged: (value) =>
-                        setState(() => _isFoodIncluded = value!),
-                  ),
-                  ActivitiesStep(
-                    activities: _activities,
-                    activityCategories: _activityCategories,
-                    onActivitiesChanged: (updatedActivities) {
-                      setState(() {
-                        _activities = updatedActivities;
-                      });
-                    },
-                  ),
-                  ScheduleStep(
-                    tourDates: _tourDates,
-                    onTourDatesChanged: (updatedTourDates) {
-                      setState(() {
-                        _tourDates = updatedTourDates;
-                      });
-                    },
-                  ),
-                  ImagesStep(
-                    selectedImages: _selectedImages,
-                    onImagesChanged: (updatedImages) {
-                      setState(() {
-                        _selectedImages = updatedImages;
-                      });
-                    },
-                    onShowError: _showErrorSnackBar,
-                    onShowSuccess: _showSuccessSnackBar,
-                  ),
-                ],
-              ),
-            )),
-            // Navigation buttons
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.white,
-              child: Row(
-                children: [
-                  if (_currentStep > 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _previousStep,
-                        child: const Text('Previous'),
-                      ),
-                    ),
-                  if (_currentStep > 0) const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor:
-                            WidgetStateProperty.resolveWith<Color?>((states) {
-                          if (states.contains(WidgetState.disabled)) {
-                            return Colors.grey; // Color when disabled
-                          }
-                          return AppColors.primary800;
-                        }),
-                        foregroundColor:
-                            WidgetStateProperty.resolveWith<Color?>((states) {
-                          if (states.contains(WidgetState.disabled)) {
-                            return Colors.white; // Color when disabled
-                          }
-                          return Colors.white; // Default color
-                        }),
-                      ),
-                      onPressed: _isLoading
-                          ? null
-                          : (_currentStep == 3 ? _submitTour : _nextStep),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(_currentStep == 3 ? 'Create Tour' : 'Next'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
+        ));
+  }
+
+  Widget _buildStepLabel(String label, int step) {
+    final isActive = step == _currentStep;
+    final isCompleted = step < _currentStep;
+
+    return Expanded(
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+          color: isActive
+              ? AppColors.primary800
+              : isCompleted
+                  ? Colors.green
+                  : Colors.grey[600],
         ),
       ),
     );

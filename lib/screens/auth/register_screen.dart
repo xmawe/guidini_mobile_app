@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../../constants/colors.dart';
 import 'package:guidini/widgets/custom_input_field.dart';
 import 'package:guidini/services/auth_service.dart';
+import 'package:guidini/config/app_config.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -54,7 +55,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.200.8:8000/api/cities'),
+        Uri.parse('${AppConfig.apiHost}/api/cities'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

@@ -24,6 +24,12 @@ class AppColors {
   static const Color gray800 = Color(0xFF404040);
   static const Color gray900 = Color(0xFF262626);
   static const Color gray950 = Color(0xFF1C1C1C);
+  //oualid's
+  static const Color primaryRed = Color(0xFF800000);
+  static const Color ratingBackground = Color(0xFFFFE5E5);
+  static const Color grayLight = Color(0xFFD9D9D9);
+  static const Color grayText = Color(0xFF737373);
+  static const Color white = Color(0xFFF2F2F2);
 
   // Semantic Colors (mapped to new scheme)
   static const Color background = Color(0xFFFFFFFF);

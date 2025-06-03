@@ -29,14 +29,14 @@ InputDecoration customInputDecoration({
       borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(
         color: AppColors.gray100, // Border color (unfocused)
-        width: 1.5,
+        width: 1,
       ),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(
         color: AppColors.primary700,
-        width: 1.5,
+        width: 1,
       ),
     ),
     focusedBorder: OutlineInputBorder(

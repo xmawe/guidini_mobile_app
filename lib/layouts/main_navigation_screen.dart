@@ -1,8 +1,9 @@
 // lib/layouts/main_navigation_screen.dart
 import 'package:guidini/constants/colors.dart';
-import 'package:guidini/screens/home_screen.dart';
+import 'package:guidini/screens/public/home_screen.dart';
 import 'package:guidini/screens/loggedin/bookings_screen.dart';
 import 'package:guidini/screens/loggedin/conversations_screen.dart';
+import 'package:guidini/screens/public/my_bookings_screen.dart';
 import 'package:guidini/screens/public/search_screen.dart';
 // Import guide screens
 import 'package:guidini/screens/guide/guide_dashboard_screen.dart';
@@ -72,7 +73,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         case 1:
           return const SearchScreen();
         case 2:
-          return const BookingsScreen();
+          return const MyBookingsScreen();
         case 3:
           return const ConversationsScreen();
         default:

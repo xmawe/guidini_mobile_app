@@ -4,17 +4,16 @@ class Tour {
   final String description;
   final double price;
   final int duration;
-  final String guideId;
+  final String city;
+  final String location;
+  final int guideId; // Added guideId field
   final String guideName;
   final double guideRating;
-  final String location;
-  final String city;
-  final String imageUrl;
+  final double tourRating;
   final bool isTransportIncluded;
   final bool isFoodIncluded;
   final int activitiesCount;
-  final String availabilityStatus;
-  final int maxGroupSize;
+  final String? imageUrl;
 
   Tour({
     required this.id,
@@ -22,71 +21,47 @@ class Tour {
     required this.description,
     required this.price,
     required this.duration,
-    required this.guideId,
+    required this.city,
+    required this.location,
+    required this.guideId, // Added to constructor
     required this.guideName,
     required this.guideRating,
-    required this.location,
-    required this.city,
-    required this.imageUrl,
+    required this.tourRating,
     required this.isTransportIncluded,
     required this.isFoodIncluded,
     required this.activitiesCount,
-    required this.availabilityStatus,
-    this.maxGroupSize = 1,
+    this.imageUrl,
   });
 
   factory Tour.fromJson(Map<String, dynamic> json) {
+    // Get the first activity's location label
+    String locationLabel = 'Unknown Location';
+    if (json['activities'] != null &&
+        json['activities'].isNotEmpty &&
+        json['activities'][0]['location'] != null) {
+      locationLabel =
+          json['activities'][0]['location']['label'] ?? 'Unknown Location';
+    }
+
     return Tour(
       id: json['id'],
       title: json['title'],
       description: json['description'],
       price: double.parse(json['price'].toString()),
       duration: json['duration'],
-      guideId: json['guide_id'].toString(),
-      guideName: json['guide_name'] ?? 'Unknown Guide',
-      guideRating: double.parse(json['guide_rating']?.toString() ?? '0.0'),
-      location: json['location'] ?? '',
-      city: json['city'] ?? '',
-      imageUrl: json['image_url'] ?? '',
-      isTransportIncluded: json['is_transport_included'] ?? false,
-      isFoodIncluded: json['is_food_included'] ?? false,
-      activitiesCount: json['activities_count'] ?? 0,
-      availabilityStatus: json['availability_status'] ?? 'available',
-      maxGroupSize: json['max_group_size'] ?? 1,
+      city: json['city']['name'] ?? 'Unknown City',
+      location: locationLabel,
+      guideId: json['guide']['id'], // Extract guideId from JSON
+      guideName:
+          '${json['guide']['user']['firstName']} ${json['guide']['user']['lastName']}',
+      guideRating: double.parse(json['guide']['rating'].toString()),
+      tourRating: double.parse(json['rating'].toString()),
+      isTransportIncluded: json['isTransportIncluded'] == 1,
+      isFoodIncluded: json['isFoodIncluded'] == 1,
+      activitiesCount: json['activityCount'] ?? 0,
+      imageUrl: json['tourImages'] != null && json['tourImages'].isNotEmpty
+          ? json['tourImages'][0]['imageUrl']
+          : null,
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'description': description,
-      'price': price,
-      'duration': duration,
-      'guide_id': guideId,
-      'guide_name': guideName,
-      'guide_rating': guideRating,
-      'location': location,
-      'city': city,
-      'image_url': imageUrl,
-      'is_transport_included': isTransportIncluded,
-      'is_food_included': isFoodIncluded,
-      'activities_count': activitiesCount,
-      'availability_status': availabilityStatus,
-      'max_group_size': maxGroupSize,
-    };
-  }
-
-  String get formattedDuration {
-    final hours = duration ~/ 60;
-    final minutes = duration % 60;
-    if (minutes == 0) {
-      return '$hours Hour${hours != 1 ? 's' : ''}';
-    }
-    return '${hours}h ${minutes}m';
-  }
-
-  String get formattedPrice => '\$${price.toInt()}';
-
-  bool get isAvailable => availabilityStatus == 'available';
 }

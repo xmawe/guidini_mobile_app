@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../../constants/colors.dart';
 import 'package:guidini/widgets/custom_input_field.dart';
 import 'package:guidini/services/auth_service.dart';
+import 'package:guidini/config/app_config.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({Key? key}) : super(key: key);
@@ -100,7 +101,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.200.8:8000/api/cities'),
+        Uri.parse('${AppConfig.apiHost}/api/cities'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -171,7 +172,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://192.168.200.8:8000/api/user/edit/personal'),
+        Uri.parse('${AppConfig.apiHost}/api/user/edit/personal'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

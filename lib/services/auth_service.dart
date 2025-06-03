@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:guidini/config/app_config.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://192.168.200.8:8000/api';
+  static const String baseUrl = '${AppConfig.apiHost}/api';
 
   // Save user data and token after successful login/register
   static Future<void> saveUserData({

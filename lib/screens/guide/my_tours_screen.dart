@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../constants/colors.dart';
 import 'package:guidini/services/auth_service.dart';
+import 'package:guidini/config/app_config.dart';
 
 class MyToursScreen extends StatefulWidget {
   const MyToursScreen({Key? key}) : super(key: key);
@@ -36,7 +37,7 @@ class _MyToursScreenState extends State<MyToursScreen> {
       }
 
       final response = await http.get(
-        Uri.parse('http://192.168.200.8:8000/api/guide/tours'),
+        Uri.parse('${AppConfig.apiHost}/api/guide/tours'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
