@@ -1,4 +1,3 @@
-// lib/providers/user_role_provider.dart
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,17 +38,14 @@ class UserRoleProvider with ChangeNotifier {
     }
   }
 
-  /// Check if user can switch to guide role based on their profile
+  /// Check if user can switch to guide role based on admin approval
   Future<void> _checkGuideEligibility() async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Check if user has completed guide registration
-      // This could be based on having guide-specific data in profile
-      // or a flag from your backend API
+      // Only allow switching if the backend confirms approval (e.g., guide_application_status == 'approved')
       _canSwitchToGuide = prefs.getBool(_canSwitchKey) ??
-          (_userData?['isGuide'] == true) ??
-          (_userData?['guideProfile'] != null);
+          (_userData?['guide_application_status'] == 'approved');
     } catch (e) {
       print('Error checking guide eligibility: $e');
     }
@@ -58,7 +54,8 @@ class UserRoleProvider with ChangeNotifier {
   /// Switch user role
   Future<void> switchRole(UserRole newRole) async {
     if (newRole == UserRole.guide && !_canSwitchToGuide) {
-      throw Exception('User is not eligible to switch to guide role');
+      throw Exception(
+          'User is not eligible to switch to guide role until admin approval');
     }
 
     _currentRole = newRole;
@@ -77,12 +74,14 @@ class UserRoleProvider with ChangeNotifier {
     }
   }
 
-  /// Enable guide role switching (call this after successful guide registration)
+  /// Enable guide role switching (call this after admin approval)
   Future<void> enableGuideRole() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_canSwitchKey, true);
       _canSwitchToGuide = true;
+      _currentRole = UserRole.guide; // Switch role after approval
+      await _saveRole();
       notifyListeners();
     } catch (e) {
       print('Error enabling guide role: $e');

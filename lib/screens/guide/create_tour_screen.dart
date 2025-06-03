@@ -186,7 +186,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('${AppConfig.apiHost}/api/guide/tours'),
+        Uri.parse('http://192.168.200.8:8000/api/tours'),
       );
 
       request.headers.addAll({
